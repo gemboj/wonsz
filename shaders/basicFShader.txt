@@ -1,0 +1,37 @@
+precision mediump float;
+
+uniform vec3 uPointLightColor[1];
+uniform vec3 uPointLightLocation[1];
+uniform float uPointLightMinRange[1];
+uniform float uPointLightMaxRange[1];
+
+uniform vec3 uAmbientLightColor;
+
+varying vec4 vColor;
+varying vec4 vPosition;
+varying vec3 vTransformedNormal;
+
+void main(void) {
+vec3 lightWeighting = uAmbientLightColor;
+
+for(int i = 0; i < 1; i++){
+   float pointLightDistance = distance(uPointLightLocation[i], vPosition.xyz);
+   float pointLightDistanceMultiplier;
+   if(pointLightDistance < uPointLightMinRange[i]){
+      pointLightDistanceMultiplier = 1.0;
+   }
+   else if (pointLightDistance > (uPointLightMinRange[i] + uPointLightMaxRange[i])){
+      pointLightDistanceMultiplier = 0.0;
+   }
+   else{
+      pointLightDistanceMultiplier = max(1.0 - (pointLightDistance - uPointLightMinRange[i])/uPointLightMaxRange[i], 0.0);
+   };
+   
+   vec3 lightDirection = normalize(uPointLightLocation[i] - vPosition.xyz);
+   float directionalLightWeighting = max(dot(normalize(vTransformedNormal), lightDirection), 0.0);
+   
+   lightWeighting += uPointLightColor[i] * directionalLightWeighting * pointLightDistanceMultiplier;
+}
+
+   gl_FragColor = vec4(vColor.rgb * lightWeighting, vColor.a);
+}
