@@ -19,6 +19,7 @@ AABB.prototype.init = function(vertices) {
             }
             else if (vertices[i + j] > this.max[j]) {
                 this.max[j] = vertices[i + j];
+                
             }
         }
     }
