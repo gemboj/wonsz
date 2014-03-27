@@ -25,6 +25,7 @@ Scene.prototype.removeObject = function(object) {
             var tab = this.objects[i];
             for (var j = 0; j < tab.length; j++) {
                 if (tab[j] == object) {
+                    this.objects[i][j].destructor();
                     this.objects[i].splice(j, 1);
                     return;
                 }

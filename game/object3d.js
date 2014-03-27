@@ -9,9 +9,13 @@ function Object3d(input) {
     this.inverseNormals = typeof input.inverseNormals == "undefined" ? false : input.inverseNormals;
     this.setPositionMatrix(input.position);
 
-    //this.model.boundingVolume.constructor.name;
-    //this.boundingVolume = this.model.boundingVolume.getBoundingVolume();
+    this.collisionGridCoords = [];
+    this.collision = input.collision;
     this.init(input.gl);
+}
+
+Object3d.prototype.destructor = function(){
+    this.collision.deleteObject(this);
 }
 
 Object3d.prototype.draw = function(gl, shader) {
@@ -129,7 +133,12 @@ Object3d.prototype.translate = function(arr) {
     mat4.translate(this.positionMatrix, arr);
 };
 
-Object3d.prototype.getBoundingVolume = function(){
-    return this.model.boundingVolume.multiplyByMatrix(this.getPositionMatrix());
+Object3d.prototype.computeBoundingVolume = function(){    
+    this.model.boundingVolume.computeBoundingVolume(this.getPositionMatrix());
+}
+
+Object3d.prototype.insertIntoCollisionObject = function(collsion){
+    this.computeBoundingVolume();
+    this.collisionGridCoords = collsion.insertObject(this);
     
 }

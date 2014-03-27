@@ -1,61 +1,55 @@
 function AABB(input) {
     this.min = [0, 0, 0];
     this.max = [0, 0, 0];
-
+    
+    this.minBase = [0, 0, 0];
+    this.maxBase = [0, 0, 0];
+    
     if (input["vertices"]) {
         this.init(input.vertices);
     }
     else {
-        this.min = input.AABB.min.slice();
-        this.max = input.AABB.max.slice();
+        //clone
+        this.minBase = input.AABB.minBase.slice();
+        this.maxBase = input.AABB.maxBase.slice();
     }
 }
 
 AABB.prototype.init = function(vertices) {
     for (var i = 0; i < vertices.length; i += 3) {
         for (var j = 0; j < 3; j++) {
-            if (vertices[i + j] < this.min[j]) {
-                this.min[j] = vertices[i + j];
+            if (vertices[i + j] < this.minBase[j]) {
+                this.minBase[j] = vertices[i + j];
             }
-            else if (vertices[i + j] > this.max[j]) {
-                this.max[j] = vertices[i + j];
+            else if (vertices[i + j] > this.maxBase[j]) {
+                this.maxBase[j] = vertices[i + j];
                 
             }
         }
     }
 }
 
-AABB.prototype.getScaled = function(arr) {
-    var tempObj = {};
-    tempObj.min = [];
-    tempObj.max = [];
+AABB.prototype.scale = function(arr) {
     for (var i = 0; i < arr.length; i++) {
-        tempObj.min.push(arr[i] * this.min[i]);
-        tempObj.max.push(arr[i] * this.max[i]);
+        this.min[i] = this.minBase[i] * arr[i];
+        this.max[i] = this.maxBase[i] * arr[i];
     }
-    return tempObj;
 }
 
 
 
-AABB.prototype.getTranslated = function(arr) {
-    var tempObj = {};
-    tempObj.min = [];
-    tempObj.max = [];
-    for (var i = 0; i < 3; i++) {
-        tempObj.min.push(arr[i] + this.min[i]);
-        tempObj.max.push(arr[i] + this.max[i]);
+AABB.prototype.translate = function(arr) {
+    for (var i = 0; i < arr.length; i++) {
+        this.min[i] = this.min[i] + arr[i];
+        this.max[i] = this.max[i] + arr[i];
     }
-    return tempObj;
 }
 
-AABB.prototype.clone = function(aabb) {
-    return new AABB(aabb);
+AABB.prototype.clone = function() {
+    return new AABB({AABB: this});
 }
 
-AABB.prototype.multiplyByMatrix = function(matrix) {
-    var tempObj = new Object();
-    tempObj = this.getScaled([matrix[0], matrix[5], matrix[10]]);
-    tempObj = this.getTranslated([matrix[12], matrix[13], matrix[14]]);
-    return tempObj;
+AABB.prototype.computeBoundingVolume = function(matrix) {
+    this.scale([matrix[0], matrix[5], matrix[10]]);
+    this.translate([matrix[12], matrix[13], matrix[14]]);
 }

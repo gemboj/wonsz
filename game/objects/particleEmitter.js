@@ -12,7 +12,7 @@ function ParticleEmitter(input) {
     this.particles = [];
     this.velocities = [];
     this.lifeTime = 2000;
-    this.radius = 0.001;
+    this.radius = typeof input.radius == "undefined" ? 0.001 : input.radius;
     this.remainingTime;
     this.initBuffers(input.gl);
 }
@@ -25,6 +25,10 @@ ParticleEmitter.prototype.draw = function(gl, shader) {
     
     gl.drawArrays(gl.POINTS, 0, this.particles.length / 3);
 };
+
+ParticleEmitter.prototype.destructor = function(){
+    
+}
 
 ParticleEmitter.prototype.initBuffers = function(gl) {
     for (var i = 0; i < this.num * 3; i += 3) {

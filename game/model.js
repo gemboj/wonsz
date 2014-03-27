@@ -203,6 +203,6 @@ Model.prototype.getModel = function() {
     model.textureCoords = this.textureCoords.slice();
     model.textures = this.textures.slice();
     model.texturesLoaded = this.texturesLoaded;
-    model.boundingVolume = this.boundingVolume.clone({AABB: this.boundingVolume});
+    model.boundingVolume = this.boundingVolume.clone();
     return model;
 }

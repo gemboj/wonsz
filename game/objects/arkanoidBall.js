@@ -1,7 +1,12 @@
 function ArkanoidBall(input) {
     Object3d.call(this, input);
-    this.velY = 0.1;
-    this.velX = 0.1;
+
+    this.speed = 0.3;
+
+    var tempVec = [1, 1, 0];
+    vec3.normalize(tempVec);
+    this.velY = tempVec[1] * this.speed;
+    this.velX = tempVec[0] * this.speed;
     this.keys = {left: 37, right: 39, up: 38, down: 40};
 }
 
@@ -11,22 +16,37 @@ ArkanoidBall.prototype.constructor = ArkanoidBall;
 ArkanoidBall.prototype.update = function(gl, elapsed, scene) {
     mat4.translate(this.positionMatrix, [this.velX, this.velY, 0]);
     var posVec = this.getPositionVec();
-   
-    if ((posVec[0] < -5) || (posVec[0] > 5)) {
+
+    if (posVec[0] < -5) {
         this.velX *= -1;
+        this.positionMatrix[12] = -5
+    }
+    if(posVec[0] > 5){
+        this.velX *= -1;
+       this.positionMatrix[12] = 5
     }
 
-    if ((posVec[1] < -2) || (posVec[1] > 4)) {
+    if (posVec[1] < -2) {
         this.velY *= -1;
+        this.positionMatrix[13] = -2
     }
-    var objects = scene.objects["drawBasicShaderT"];
-    for (var i = 0; i < objects.length; i++) {
-        var tempObj = objects[i];
-        if (tempObj instanceof ArkanoidPaddle) {
-            if(SqDistPointAABB(posVec, tempObj.AABB) < 0.3*0.3){
-                this.velY *= -1;
-            }
+    if(posVec[1] > 4){
+        this.velY *= -1;
+        this.positionMatrix[13] = 4
+    }
+
+    this.computeBoundingVolume();
+    var collisionObject = this.collision.checkBoundingVolumeCollision(this.model.boundingVolume);
+    if (collisionObject) {
+        if (collisionObject instanceof Cube) {
+            scene.removeObject(collisionObject);
         }
+        var tempVec = [];
+        vec3.subtract(this.getPositionVec(), collisionObject.getPositionVec(), tempVec);
+        vec3.normalize(tempVec);
+        this.velY = tempVec[1] * this.speed;
+        this.velX = tempVec[0] * this.speed;
+        scene.addObject(new ParticleEmitter({gl: gl, position: this.getPositionVec(), numParticles: 1000, radius: 0.1}));
     }
 }
 

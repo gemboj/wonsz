@@ -11,6 +11,16 @@ ArkanoidPaddle.prototype.constructor = ArkanoidPaddle;
 
 ArkanoidPaddle.prototype.update = function(gl, elapsed, scene) {
     this.handleKeys(elapsed);
+    this.computeBoundingVolume();
+    this.collision.updateObject(this);
+    if (this.positionMatrix[12] < -5) {
+
+        this.positionMatrix[12] = -5
+    }
+    if(this.positionMatrix[12] > 5){
+
+       this.positionMatrix[12] = 5
+    }
 }
 
 ArkanoidPaddle.prototype.handleKeys = function(elapsed) {

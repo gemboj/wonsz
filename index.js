@@ -12,28 +12,32 @@ function webGLStart() {
 }
 
 function arkanoid(gl){
-    var collision = new Collision({sceneSize: [9, 9, 2], gridSize: [3, 3, 1]});
+    var collision = new Collision({sceneSize: [16, 10, 2], gridSize: [5, 3, 1]});
     
     
     var scene = new Scene();
     var cube = new Model({geometry: "Cube", model: "Cube"});
-    var kula = new Model({geometry: "kulaSmooth", model: "cos"});
-    //collision.insertBoundingVolume(cube.boundingVolume);
+    var kula = new Model({geometry: "sphere", model: "cos"});
     
-    for(var i = 0; i < 1; i++){
-        for(var j = 0; j < 1; j++){
-            var cubeTemp = scene.addObject(new Object3d({position: [i*2 - 4, j*0.4 + 2, -10.0], gl: gl, model: cube, color: [Math.random()*155 + 100, Math.random()*155 + 100, Math.random()*155 + 100, 255]}));
+    for(var i = 0; i < 5; i++){
+        for(var j = 0; j < 4; j++){
+            var cubeTemp = scene.addObject(new Cube({collision: collision, position: [i*2 - 4, j*0.4 + 2, -10.0], gl: gl, model: cube, color: [Math.random()*155 + 100, Math.random()*155 + 100, Math.random()*155 + 100, 255]}));
             cubeTemp.scale([0.95, 0.15, 1]);
-            collision.insertObject(cubeTemp);
+            cubeTemp.insertIntoCollisionObject(collision);
         }        
     }
 
-    var paletka = scene.addObject(new ArkanoidPaddle({position: [0, -2, -10.0], gl: gl, model: cube, color: [255, 255, 255, 255]}));
+    var paletka = scene.addObject(new ArkanoidPaddle({collision: collision, position: [0, -2, -10.0], gl: gl, model: cube, color: [255, 255, 255, 255]}));
     paletka.scale([1.4, 0.15, 1]);
+    paletka.insertIntoCollisionObject(collision);
     
-    var kulka = scene.addObject(new ArkanoidBall({position: [0, 0, -10.0], gl: gl, model: kula, color: [255, 255, 255, 255]}));
+    var kulka = scene.addObject(new ArkanoidBall({position: [0, 0, -10.0], gl: gl, model: kula, color: [255, 255, 255, 255], collision: collision}));
     kulka.scale([0.3, 0.3, 0.3]);
     
+    var cube = scene.addObject(new Cube({inverseNormals: true, position: [0, 0, -10.0], gl: gl, model: cube, color: [155, 155, 155, 255]}));
+    cube.scale([7, 4, 10]);
+    
+    scene.addPointLight(new PointLightFollow({object: kulka, minRange: 0.5, maxRange: 1, color: [1, 0, 0]}));
     scene.addPointLight(new PointLightStatic({location: [2.0, 2.0, -7.0], color: [0.7, 0.7, 0.7], minRange: 8.0, maxRange: 100.0}));
     scene.addAmbientLight([0.2, 0.2, 0.2]);
 
