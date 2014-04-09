@@ -12,8 +12,6 @@ varying vec3 vTransformedNormal;
 varying vec2 vTextureCoord;
 
 void main(void) {
-    gl_PointSize = 2.0;
-
     vPosition = uMVMatrix * vec4(aVertexPosition, 1.0);
 
     vTransformedNormal = uNMatrix * aVertexNormal;

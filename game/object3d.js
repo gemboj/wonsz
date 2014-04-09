@@ -130,14 +130,18 @@ Object3d.prototype.rotate = function(angleX, angleY, angleZ) {
 };
 
 Object3d.prototype.translate = function(arr) {
-    mat4.translate(this.positionMatrix, arr);
+    this.positionMatrix[12] += arr[0];
+    this.positionMatrix[13] += arr[1];
+    this.positionMatrix[14] += arr[2];
+    
+    //mat4.translate(this.positionMatrix, [arr[0] * (1/this.positionMatrix[0]), arr[1] * (1/this.positionMatrix[5]), arr[2] * (1/this.positionMatrix[10])]);
 };
 
 Object3d.prototype.computeBoundingVolume = function(){    
     this.model.boundingVolume.computeBoundingVolume(this.getPositionMatrix());
 }
 
-Object3d.prototype.insertIntoCollisionObject = function(collsion){
+Object3d.prototype.insertIntoCollision = function(collsion){
     this.computeBoundingVolume();
     this.collisionGridCoords = collsion.insertObject(this);
     

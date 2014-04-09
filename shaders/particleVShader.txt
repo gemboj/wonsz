@@ -1,10 +1,19 @@
 attribute vec3 aParticlePosition;
+attribute vec3 aParticleVelocities;
+
+uniform float uCurrentTime;
+uniform float uMaxRange;
+uniform float uLifeTime;
 
 uniform mat4 uMVMatrix;
 uniform mat4 uPMatrix;
 
+varying float vAlfa;
 
 void main(void) {
    gl_PointSize = 2.0;
-   gl_Position = uPMatrix * uMVMatrix * vec4(aParticlePosition, 1.0);
+   vAlfa = uCurrentTime/uLifeTime;
+   vec4 pos = uMVMatrix * vec4(aParticlePosition + (aParticleVelocities * uMaxRange * vAlfa), 1.0);
+
+   gl_Position = uPMatrix * pos;
 }

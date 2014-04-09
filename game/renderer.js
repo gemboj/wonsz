@@ -20,8 +20,8 @@ function GameRenderer(gl) {
             ["uMiddleRing", "uPMatrix", "uMVMatrix", "uNMatrix", "uPointLightLocation", "uPointLightColor", "uAmbientLightColor", "uPointLightMinRange", "uPointLightMaxRange", "uColor", "uSnakeLightLocation", "uSnakeLightColor", "uSnakeLightMinRange", "uSnakeLightMaxRange"]);
 
     this.particleShader = initShaders(gl, "particleFShader", "particleVShader",
-            ["aParticlePosition"],
-            ["uPMatrix", "uMVMatrix", "uColor"]);
+            ["aParticlePosition", "aParticleVelocities"],
+            ["uPMatrix", "uMVMatrix", "uColor", "uCurrentTime", "uMaxRange", "uLifeTime"]);
 
     /*this.particleShader = initShaders(gl, "debugFShader", "debugVShader",
      ["aLineVertex"],

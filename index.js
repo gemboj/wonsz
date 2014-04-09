@@ -3,46 +3,50 @@ function webGLStart() {
     var canvas = getCanvas();
     inputHandler = new InputHandler(canvas);
     var gl = initGl(canvas);
-    
+
     var scene = arkanoid(gl);
-    
+
     var renderer = new GameRenderer(gl);
 
     startGameLoop(gl, renderer, scene);
 }
 
-function arkanoid(gl){
+function arkanoid(gl) {
     var collision = new Collision({sceneSize: [16, 10, 2], gridSize: [5, 3, 1]});
     
-    
+    collision.insertObject({special: "AAPlane", vector: [-1, 0, 0], point: [5, 0, 0]});
+    collision.insertObject({special: "AAPlane", vector: [1, 0, 0], point: [-5, 0, 0]});
+    collision.insertObject({special: "AAPlane", vector: [0, -1, 0], point: [0, 4, 0]});
+    collision.insertObject({special: "AAPlane", vector: [0, 1, 0], point: [0, -3, 0]});
+
     var scene = new Scene();
     var cube = new Model({geometry: "Cube", model: "Cube"});
     var kula = new Model({geometry: "sphere", model: "cos"});
-    
-    for(var i = 0; i < 5; i++){
-        for(var j = 0; j < 4; j++){
-            var cubeTemp = scene.addObject(new Cube({collision: collision, position: [i*2 - 4, j*0.4 + 2, -10.0], gl: gl, model: cube, color: [Math.random()*155 + 100, Math.random()*155 + 100, Math.random()*155 + 100, 255]}));
+
+    for (var i = 0; i < 5; i++) {
+        for (var j = 0; j < 4; j++) {
+            var cubeTemp = scene.addObject(new Cube({collision: collision, position: [i * 2 - 4, j * 0.4 + 2, -10.0], gl: gl, model: cube, color: [Math.random() * 155 + 100, Math.random() * 155 + 100, Math.random() * 155 + 100, 255]}));
             cubeTemp.scale([0.95, 0.15, 1]);
-            cubeTemp.insertIntoCollisionObject(collision);
-        }        
+            cubeTemp.insertIntoCollision(collision);
+        }
     }
 
     var paletka = scene.addObject(new ArkanoidPaddle({collision: collision, position: [0, -2, -10.0], gl: gl, model: cube, color: [255, 255, 255, 255]}));
-    paletka.scale([1.4, 0.15, 1]);
-    paletka.insertIntoCollisionObject(collision);
-    
+    paletka.scale([1.4, 0.05, 1]);
+    paletka.insertIntoCollision(collision);
+
     var kulka = scene.addObject(new ArkanoidBall({position: [0, 0, -10.0], gl: gl, model: kula, color: [255, 255, 255, 255], collision: collision}));
     kulka.scale([0.3, 0.3, 0.3]);
-    
-    var cube = scene.addObject(new Cube({inverseNormals: true, position: [0, 0, -10.0], gl: gl, model: cube, color: [155, 155, 155, 255]}));
-    cube.scale([7, 4, 10]);
-    
+
+    var cube1 = scene.addObject(new Cube({inverseNormals: true, position: [0, 0.5, -10.0], gl: gl, model: cube, color: [155, 155, 155, 255]}));
+    cube1.scale([5, 3.5, 10]);
+
     scene.addPointLight(new PointLightFollow({object: kulka, minRange: 0.5, maxRange: 1, color: [1, 0, 0]}));
     scene.addPointLight(new PointLightStatic({location: [2.0, 2.0, -7.0], color: [0.7, 0.7, 0.7], minRange: 8.0, maxRange: 100.0}));
     scene.addAmbientLight([0.2, 0.2, 0.2]);
 
     var camera = scene.addCamera(new CameraBasic({gl: gl, position: [0.0, 0.0, 0.0], movement: true, viewAngle: 45, moveRate: 0.05}));
-    
+
     return scene;
 }
 
@@ -82,4 +86,3 @@ function IntersectRayAABB(p, d, a) {
     var q = [p[0] + d[0] * tmin, p[1] + d[1] * tmin, p[2] + d[2] * tmin];
     return q;
 }
-;

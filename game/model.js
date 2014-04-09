@@ -6,6 +6,10 @@ function Model(input) {
     this.textures = [];
     this.texturesLoaded = [];
     this.boundingVolume;
+    this.boundingParticles = [];
+    this.boundingParticlesVelocities = [];
+
+
 
     var model = typeof input.model == "undefined" ? input.geometry : input.model;
 
@@ -15,9 +19,9 @@ function Model(input) {
     var xmlObject = xmlhttp.responseXML;
 
     var rawVertices = [],
-            rawIndices = [],
-            rawNormals = [],
-            rawTextureCoords = [];
+        rawIndices = [],
+        rawNormals = [],
+        rawTextureCoords = [];
 
     var x = xmlObject.querySelector("[id='" + input.geometry + "-mesh-positions-array']").innerHTML;
     rawVertices = x.split(" ");
@@ -118,81 +122,8 @@ Model.prototype.flat = function(xmlObject, rawTextureCoords, rawVertices, rawNor
 
 }
 
-Model.prototype.smooth = function(xmlObject, rawTextureCoords, rawVertices, rawNormals, rawIndices, input, model) {
-    this.vertices = rawVertices;
-    var offset = 3;
-    if (input.texture.length > 0) {
-        var x = xmlObject.querySelector("[id='" + input.geometry + "-mesh-map-0-array']").innerHTML;
-        rawTextureCoords = x.split(" ");
-        for (var i = 0; i < rawTextureCoords.length; i++) {
-            rawTextureCoords[i] = +rawTextureCoords[i];
-        }
-
-        for (var i = 0; i < rawIndices.length; i += offset) {
-            this.vertices.push(rawVertices[3 * rawIndices[i]]);
-            this.vertices.push(rawVertices[3 * rawIndices[i] + 1]);
-            this.vertices.push(rawVertices[3 * rawIndices[i] + 2]);
-            this.normals.push(rawNormals[3 * rawIndices[i + 1]]);
-            this.normals.push(rawNormals[3 * rawIndices[i + 1] + 1]);
-            this.normals.push(rawNormals[3 * rawIndices[i + 1] + 2]);
-
-            this.textureCoords.push(rawTextureCoords[2 * rawIndices[i + 2]]);
-            this.textureCoords.push(rawTextureCoords[2 * rawIndices[i + 2] + 1]);
-
-            this.indices.push(i / offset);
-        }
-
-        var loadComplete = function(i) {
-            this.loaded[i] = true;
-            console.log("loaded");
-        }
-
-        var wait = function() {
-            if (!this.loaded) {
-                console.log("loading");
-                setTimeout(wait.bind(this), 10);
-            } else {
-                return;
-            }
-        }
-
-        for (var i = 0; i < input.texture.length; i++) {
-            this.texture[i] = new Image();
-            this.loaded[i] = false;
-            this.texture[i].onload = loadComplete.bind(this, i);
-            this.texture[i].src = "game/models/" + model + "/" + input.texture + ".png";
-        }
-
-
-    }
-    else {
-        if (xmlObject.querySelector("[id='" + input.geometry + "-mesh-map-0-array']") == null) {
-            offset = 2;
-            for (var i = 0; i < rawIndices.length; i += offset) {
-                this.normals[3 * rawIndices[i]] = rawNormals[3 * rawIndices[i + 1]];
-                this.normals[3 * rawIndices[i] + 1] = rawNormals[3 * rawIndices[i + 1] + 1];
-                this.normals[3 * rawIndices[i] + 2] = rawNormals[3 * rawIndices[i + 1] + 2];
-
-                this.textureCoords[2 * rawIndices[i]] = 0;
-                this.textureCoords[2 * rawIndices[i] + 1] = 0;
-
-                this.indices.push(rawIndices[i]);
-            }
-        }
-        else {
-            for (var i = 0; i < rawIndices.length; i += offset) {
-                this.normals[3 * rawIndices[i]] = rawNormals[3 * rawIndices[i + 1]];
-                this.normals[3 * rawIndices[i] + 1] = rawNormals[3 * rawIndices[i + 1] + 1];
-                this.normals[3 * rawIndices[i] + 2] = rawNormals[3 * rawIndices[i + 1] + 2];
-
-                this.textureCoords[2 * rawIndices[i]] = 0;
-                this.textureCoords[2 * rawIndices[i] + 1] = 0;
-
-                this.indices.push(rawIndices[i]);
-            }
-        }
-    }
-
+Model.prototype.getBoundingParticles = function(){
+    
 }
 
 Model.prototype.getModel = function() {

@@ -1,17 +1,14 @@
 function Collision(input) {
-    this.widthScene = input.sceneSize[0]; //srodek sceny na coord 0, 0, 0
-    this.heightScene = input.sceneSize[1];
-    this.depthScene = input.sceneSize[2];
-    this.widthGrid = input.gridSize[0];
-    this.heightGrid = input.gridSize[1];
-    this.depthGrid = input.gridSize[2];
+    this.sceneSize = [input.sceneSize[0], input.sceneSize[1], input.sceneSize[2]]; //srodek sceny na coord 0, 0, 0
+    this.gridSize = [input.gridSize[0], input.gridSize[1], input.gridSize[2]];
+
     this.grid = this.initGrid();
 }
 
-Collision.prototype.convertPlane = function(x, plane) {
-    var gridCount = this[plane + "Scene"] / this[plane + "Grid"];
-    var coord = -this[plane + "Scene"] / 2 + gridCount;
-    for (var i = 0; i <= this[plane + "Grid"]; i++) {
+Collision.prototype.convertAABBPlane = function(x, plane) {
+    var gridCount = this.sceneSize[plane] / this.gridSize[plane];
+    var coord = -this.sceneSize[plane] / 2 + gridCount;
+    for (var i = 0; i <= this.gridSize[plane]; i++) {
         if (x <= coord) {
             return i;
         }
@@ -19,8 +16,40 @@ Collision.prototype.convertPlane = function(x, plane) {
     }
 }
 
-Collision.prototype.insertObject = function(Obj) {    
-    var tempTab = this["check" + Obj.model.boundingVolume.constructor.name + "Grid"](Obj.model.boundingVolume);
+Collision.prototype.convertPoint = function(x) {
+    var gridCount = [];
+    for (var i = 0; i < 3; i++) {
+        gridCount.push(this.sceneSize[i] / this.gridSize[i]);
+    }
+
+    var coord = [];
+    for (var i = 0; i < 3; i++) {
+        coord.push(-this.sceneSize[i] / 2 + gridCount[i]);
+    }
+
+    var point = [];
+
+    for (var j = 0; j < 3; j++) {
+        for (var i = 0; i <= this.gridSize[j]; i++) {
+            if (x[j] <= coord[j]) {
+                point.push(i);
+                break;
+            }
+            coord[j] += gridCount[j];
+        }
+    }
+    return point;
+}
+
+Collision.prototype.insertObject = function(Obj) {
+    var tempTab;
+    if (typeof Obj.special == "undefined") {
+        tempTab = this["check" + Obj.model.boundingVolume.constructor.name + "Grid"](Obj.model.boundingVolume);
+    }
+    else {
+        tempTab = this["check" + Obj.special + "Grid"](Obj);
+    }
+    
     for (i = 0; i < tempTab.length; i++) {
         this.grid[tempTab[i][0]][tempTab[i][1]][tempTab[i][2]].push(Obj);
     }
@@ -42,13 +71,38 @@ Collision.prototype.deleteObject = function(Obj) {
 
 Collision.prototype.checkAABBGrid = function(AABB) {
     var tempTab = [];
-    for (var i = this.convertPlane(AABB.min[0], "width"); i <= this.convertPlane(AABB.max[0], "width"); i++) {
-        for (var j = this.convertPlane(AABB.min[1], "height"); j <= this.convertPlane(AABB.max[1], "height"); j++) {
-            for (var k = this.convertPlane(AABB.min[2], "depth"); k <= this.convertPlane(AABB.max[2], "depth"); k++) {
+    var min = this.convertPoint(AABB.min);
+    var max = this.convertPoint(AABB.max);
+    for (var i = min[0]; i <= max[0]; i++) {
+        for (var j = min[1]; j <= max[1]; j++) {
+            for (var k = min[2]; k <= max[2]; k++) {
                 tempTab.push([i, j, k]);
             }
         }
     }
+    return tempTab;
+}
+//AAPlane: point, vector
+Collision.prototype.checkAAPlaneGrid = function(AAPlane){
+    var tempTab = [];
+    var vector = AAPlane.vector;
+    var point = this.convertPoint(AAPlane.point);
+    
+    var i = point[0] * Math.abs(vector[0]),
+        i1 = vector[0] != 0 ? i+1 : this.gridSize[0],
+        j = point[1] * Math.abs(vector[1]),
+        j1 = vector[1] != 0 ? j+1 : this.gridSize[1],
+        k = point[2] * Math.abs(vector[2]),
+        k1 = vector[2] != 0 ? k+1 : this.gridSize[2];
+        
+    for(i = point[0] * Math.abs(vector[0]); i < i1; i++){
+        for(j = point[1] * Math.abs(vector[1]); j < j1; j++){
+            for(k = point[2] * Math.abs(vector[2]); k < k1; k++){
+                tempTab.push([i, j, k]);
+            }
+        }
+    }
+    
     return tempTab;
 }
 
@@ -63,15 +117,44 @@ Collision.prototype.checkAABBagainstAABB = function(AABB1, AABB2) {
     return true;
 }
 
+Collision.prototype.checkAABBagainstAAPlane = function(AABB, AAPlane){
+    for(var i = 0; i < 3; i++){
+        if(AAPlane.vector[i]  == 1){
+            if(AABB.min[i] > AAPlane.point[i]){
+                return false;
+            }
+            break;
+        }
+        else if(AAPlane.vector[i]  == -1){
+            if(AABB.max[i] < AAPlane.point[i]){
+                return false;
+            }
+            break;
+        }        
+    }
+    
+    return true;
+}
+
 Collision.prototype.checkBoundingVolumeCollision = function(BV) {
     var inputBV = BV.constructor.name;
     var tempTab = this["check" + inputBV + "Grid"](BV);
     for (var i = 0; i < tempTab.length; i++) {
         var tempTab2 = this.grid[tempTab[i][0]][tempTab[i][1]][tempTab[i][2]];
         for (var j = 0; j < tempTab2.length; j++) {
-            if (this["check" + inputBV + "against" + tempTab2[j].model.boundingVolume.constructor.name](BV, tempTab2[j].model.boundingVolume)) {
+            if (typeof tempTab2[j].special == "undefined") {
+                var objBV = tempTab2[j].model.boundingVolume;
+                var name = tempTab2[j].model.boundingVolume.constructor.name
+            }
+            else{
+                var objBV = tempTab2[j];
+                var name = tempTab2[j].special;
+            }
+            
+            if (this["check" + inputBV + "against" + name](BV, objBV)) {
                 return tempTab2[j];
             }
+
         }
     }
     return 0;
@@ -100,8 +183,8 @@ Collision.prototype.checkTailCollision = function(location, radius, direction) {
 };
 Collision.prototype.sqDistPointSegment = function(a, b, c) {
     var ab = [b[0] - a[0], b[1] - a[1], b[2] - a[2]],
-            ac = [c[0] - a[0], c[1] - a[1], c[2] - a[2]],
-            bc = [c[0] - b[0], c[1] - b[1], c[2] - b[2]];
+        ac = [c[0] - a[0], c[1] - a[1], c[2] - a[2]],
+        bc = [c[0] - b[0], c[1] - b[1], c[2] - b[2]];
     var e = vec3.dot(ac, ab);
     if (e <= 0)
         return vec3.dot(ac, ac);
@@ -112,7 +195,7 @@ Collision.prototype.sqDistPointSegment = function(a, b, c) {
 };
 Collision.prototype.clsPntOnSeg = function(a, b, c) {
     var ab = [b[0] - a[0], b[1] - a[1], b[2] - a[2]],
-            ac = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
+        ac = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
     var t = vec3.dot(ac, ab) / vec3.dot(ab, ab);
     if (t > 1)
         t = 1;
@@ -135,11 +218,11 @@ Collision.prototype.vecPointPlane = function(Q, P, n) {
 
 Collision.prototype.initGrid = function() {
     var tempGrid = [];
-    for (var i = 0; i < this.widthGrid; i++) {
+    for (var i = 0; i < this.gridSize[0]; i++) {
         tempGrid[i] = [];
-        for (var j = 0; j < this.heightGrid; j++) {
+        for (var j = 0; j < this.gridSize[1]; j++) {
             tempGrid[i][j] = [];
-            for (var k = 0; k < this.depthGrid; k++) {
+            for (var k = 0; k < this.gridSize[2]; k++) {
                 tempGrid[i][j][k] = [];
             }
         }
