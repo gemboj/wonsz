@@ -19,9 +19,9 @@ function Model(input) {
     var xmlObject = xmlhttp.responseXML;
 
     var rawVertices = [],
-        rawIndices = [],
-        rawNormals = [],
-        rawTextureCoords = [];
+            rawIndices = [],
+            rawNormals = [],
+            rawTextureCoords = [];
 
     var x = xmlObject.querySelector("[id='" + input.geometry + "-mesh-positions-array']").innerHTML;
     rawVertices = x.split(" ");
@@ -115,15 +115,51 @@ Model.prototype.flat = function(xmlObject, rawTextureCoords, rawVertices, rawNor
                 this.textureCoords.push(0);
                 this.textureCoords.push(0);
 
+
+
+
                 this.indices.push(i / offset);
             }
         }
     }
-
+    
+    for (var i = 0; i < this.indices.length; i+=3){
+        var a = [this.vertices[3*this.indices[i]], this.vertices[3*this.indices[i] +1], this.vertices[3*this.indices[i] +2]];
+        var b = [this.vertices[3*this.indices[i+1]], this.vertices[3*this.indices[i+1] +1], this.vertices[3*this.indices[i+1] +2]];
+        var c = [this.vertices[3*this.indices[i+2]], this.vertices[3*this.indices[i+2] +1], this.vertices[3*this.indices[i+2] +2]];
+        var normal = [this.normals[3*this.indices[i]], this.normals[3*this.indices[i] +1], this.normals[3*this.indices[i] +2]]
+        this.getBoundingParticles(a, b, c);
+    }
 }
 
-Model.prototype.getBoundingParticles = function(){
+Model.prototype.getBoundingParticles = function(a, b, c) {
+    var ab = vec3.create(),
+        ac = vec3.create();
+
+    var field = (1/4) * Math.sqrt(); 
+
+    vec3.subtract(b, a, ab);
+    vec3.subtract(c, a, ac);
     
+    for (var j = 0; j < 100; j++) {
+        var rand = Math.random();
+
+        var sab = vec3.create();
+        vec3.scale(ab, rand, sab);
+
+        var sac = vec3.create();
+        vec3.scale(ac, Math.random() * (1 - rand), sac);
+
+        var p = vec3.create();
+        vec3.add(a, sab, p);
+        vec3.add(p, sac, p);
+        this.boundingParticles.push(p[0], p[1], p[2]);
+        
+        var vec = vec3.create();
+        vec3.subtract(p, [0,0,0], vec);
+        vec3.normalize(vec);
+        this.boundingParticlesVelocities.push(vec[0], vec[1], vec[2]);
+    }
 }
 
 Model.prototype.getModel = function() {
@@ -135,5 +171,7 @@ Model.prototype.getModel = function() {
     model.textures = this.textures.slice();
     model.texturesLoaded = this.texturesLoaded;
     model.boundingVolume = this.boundingVolume.clone();
+    model.boundingParticles = this.boundingParticles.slice();
+    model.boundingParticlesVelocities = this.boundingParticlesVelocities.slice();
     return model;
 }

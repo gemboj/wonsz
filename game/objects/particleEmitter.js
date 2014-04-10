@@ -3,14 +3,13 @@
  * @argument {optional input} {} 
  */
 function ParticleEmitter(input) {
-    this.positionMatrix = mat4.create();
-    mat4.identity(this.positionMatrix);
-    this.setPosition(input.position);
+    this.positionMatrix = input.positionMatrix;
+
     this.shader = "drawParticleShader";
     this.num = input.numParticles;
-    this.color = [1.0, 0.0, 0.0, 1.0];
-    this.particles = [];
-    this.velocities = [];
+    this.color = input.color;
+    this.particles = input.particles;
+    this.velocities = input.velocities;
     this.lifeTime = 2000;
     this.maxRange = 2;
     this.radius = typeof input.radius == "undefined" ? 0.001 : input.radius;
@@ -39,13 +38,12 @@ ParticleEmitter.prototype.destructor = function() {
 }
 
 ParticleEmitter.prototype.initBuffers = function(gl) {
-    for (var i = 0; i < this.num * 3; i += 3) {
+    /*for (var i = 0; i < this.num * 3; i += 3) {
         this.particles.push(0, 0, 0);
         var theta = Math.random() * Math.PI * 2;
         var fi = Math.random() * Math.PI * 2;
         this.velocities.push(Math.sin(theta) * Math.cos(fi), Math.cos(theta), Math.sin(theta) * Math.sin(fi));
-
-    }
+    }*/
     
     
     this.currentTime = 0;    

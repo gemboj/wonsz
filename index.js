@@ -22,23 +22,27 @@ function arkanoid(gl) {
     var scene = new Scene();
     var cube = new Model({geometry: "Cube", model: "Cube"});
     var kula = new Model({geometry: "sphere", model: "cos"});
-
+    var cos  = new Model({geometry: "pojazdSmooth", model: "pojazd"});
+    
     for (var i = 0; i < 5; i++) {
         for (var j = 0; j < 4; j++) {
-            var cubeTemp = scene.addObject(new Cube({collision: collision, position: [i * 2 - 4, j * 0.4 + 2, -10.0], gl: gl, model: cube, color: [Math.random() * 155 + 100, Math.random() * 155 + 100, Math.random() * 155 + 100, 255]}));
+            var cubeTemp = scene.addObject(new Cube({collision: collision, position: [i * 2 - 4, j * 0.4 + 2, -10.0], gl: gl, model: cube, color: [Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.5, 1]}));
             cubeTemp.scale([0.95, 0.15, 1]);
             cubeTemp.insertIntoCollision(collision);
         }
     }
-
-    var paletka = scene.addObject(new ArkanoidPaddle({collision: collision, position: [0, -2, -10.0], gl: gl, model: cube, color: [255, 255, 255, 255]}));
+    var cos = scene.addObject(new Object3d({collision: collision, position: [-3, 0, -10], gl: gl, model: cos, color: [0.2, 0.2, 1, 1]}));
+    cos.scale([0.3, 0.3, 0.3]);
+    cos.insertIntoCollision(collision);
+    
+    var paletka = scene.addObject(new ArkanoidPaddle({collision: collision, position: [0, -2, -10.0], gl: gl, model: cube, color: [1, 1, 1, 1]}));
     paletka.scale([1.4, 0.05, 1]);
     paletka.insertIntoCollision(collision);
 
-    var kulka = scene.addObject(new ArkanoidBall({position: [0, 0, -10.0], gl: gl, model: kula, color: [255, 255, 255, 255], collision: collision}));
+    var kulka = scene.addObject(new ArkanoidBall({position: [0, 0, -10.0], gl: gl, model: kula, color: [1, 1, 1, 1], collision: collision}));
     kulka.scale([0.3, 0.3, 0.3]);
 
-    var cube1 = scene.addObject(new Cube({inverseNormals: true, position: [0, 0.5, -10.0], gl: gl, model: cube, color: [155, 155, 155, 255]}));
+    var cube1 = scene.addObject(new Cube({inverseNormals: true, position: [0, 0.5, -10.0], gl: gl, model: cube, color: [0.5, 0.5, 0.5, 1]}));
     cube1.scale([5, 3.5, 10]);
 
     scene.addPointLight(new PointLightFollow({object: kulka, minRange: 0.5, maxRange: 1, color: [1, 0, 0]}));

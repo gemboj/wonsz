@@ -11,7 +11,7 @@ uniform mat4 uPMatrix;
 varying float vAlfa;
 
 void main(void) {
-   gl_PointSize = 2.0;
+   gl_PointSize = 1.0;
    vAlfa = uCurrentTime/uLifeTime;
    vec4 pos = uMVMatrix * vec4(aParticlePosition + (aParticleVelocities * uMaxRange * vAlfa), 1.0);
 

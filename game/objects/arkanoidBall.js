@@ -37,7 +37,7 @@ ArkanoidBall.prototype.update = function(gl, elapsed, scene) {
             vec3.normalize(tempVec);
             this.velY = tempVec[1] * this.speed;
             this.velX = tempVec[0] * this.speed;
-            scene.addObject(new ParticleEmitter({gl: gl, position: this.getPositionVec(), numParticles: 1000, radius: 0.1}));
+            scene.addObject(new ParticleEmitter({gl: gl, positionMatrix: collisionObject.getPositionMatrix(), color: collisionObject.color, numParticles: 1000, radius: 0.1, particles: collisionObject.model.boundingParticles, velocities: collisionObject.model.boundingParticlesVelocities}));
         }
     }
 }
