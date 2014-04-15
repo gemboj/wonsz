@@ -4,11 +4,24 @@ function webGLStart() {
     inputHandler = new InputHandler(canvas);
     var gl = initGl(canvas);
 
-    var scene = arkanoid(gl);
-
+    //var scene = arkanoid(gl);
+    var scene = test(gl);
+    
     var renderer = new GameRenderer(gl);
 
     startGameLoop(gl, renderer, scene);
+}
+
+function test(gl){
+    var scene = new Scene();
+    var plane = new Model({geometry: "Plane", model: "plane"});
+    
+    var paletka = scene.addObject(new Plane({position: [0, 0, 0], gl: gl, model: plane, color: [1, 1, 1, 1]}));
+    
+    scene.addPointLight(new PointLightStatic({location: [2.0, 2.0, -7.0], color: [0.7, 0.7, 0.7], minRange: 8.0, maxRange: 100.0}));
+    var camera = scene.addCamera(new CameraBasic({gl: gl, position: [0.0, 0.0, 0.0], movement: true, viewAngle: 45, moveRate: 0.05}));
+    
+    return scene;
 }
 
 function arkanoid(gl) {

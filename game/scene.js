@@ -5,6 +5,7 @@ function Scene() {
     this.ambientLight = {};
     
     this.return = false;
+    this.time = 0;
 }
 
 Scene.prototype.addObject = function(object) {
@@ -114,6 +115,7 @@ Scene.prototype.update = function(gl, elapsed) {
     for (var i = 0; i < this.pointLight.length; i++) {
         this.pointLight[i].update();
     }
+    this.time += elapsed;
 };
 
 Scene.prototype.setupPlayer = function(i, object, light) {

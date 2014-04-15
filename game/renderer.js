@@ -7,7 +7,7 @@ function GameRenderer(gl) {
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
-    this.basicShader = initShaders(gl, "basicFShader", "basicVShader",
+    /*this.basicShader = initShaders(gl, "basicFShader", "basicVShader",
             ["aVertexPosition", "aVertexNormal"],
             ["uPMatrix", "uMVMatrix", "uNMatrix", "uPointLightLocation", "uPointLightColor", "uAmbientLightColor", "uPointLightMinRange", "uPointLightMaxRange", "uColor"]);
 
@@ -21,34 +21,10 @@ function GameRenderer(gl) {
 
     this.particleShader = initShaders(gl, "particleFShader", "particleVShader",
             ["aParticlePosition", "aParticleVelocities"],
-            ["uPMatrix", "uMVMatrix", "uColor", "uCurrentTime", "uMaxRange", "uLifeTime"]);
+            ["uPMatrix", "uMVMatrix", "uColor", "uCurrentTime", "uMaxRange", "uLifeTime"]);*/
 
-    /*this.particleShader = initShaders(gl, "debugFShader", "debugVShader",
-     ["aLineVertex"],
-     ["uPMatrix", "uMVMatrix", "uColor"]);*/
-
-    /*this.interfaceShader = initShaders(gl, "interfaceFShader", "interfaceVShader", 
-     [], 
-     []);*/
-
-    /*for (var i = 0; i < scene.cameras.length; i++) {
-     if (scene.cameras.length === 1) {
-     this.viewPorts.push(new ViewPort(scene.cameras[i], 0, 0, gl.viewportWidth, gl.viewportHeight));
-     }
-     else if (scene.cameras.length === 2) {
-     this.viewPorts.push(new ViewPort(scene.cameras[i], i * gl.viewportWidth / 2, 0, gl.viewportWidth / 2, gl.viewportHeight));
-     }
-     else if (scene.cameras.length === 3) {
-     this.viewPorts.push(new ViewPort(scene.cameras[i], i * gl.viewportWidth / 3, 0, gl.viewportWidth / 3, gl.viewportHeight));
-     }
-     else if (scene.cameras.length === 4) {
-     this.viewPorts.push(new ViewPort(scene.cameras[i], (i % 2) * gl.viewportWidth / 2, ((i < 2) ? 0 : 1) * gl.viewportHeight / 2, gl.viewportWidth / 2, gl.viewportHeight / 2));
-     }
-     
-     }
-     mat4.perspective(90, this.viewPorts[0].x2 / this.viewPorts[0].y2, 0.01, 100.0, this.pMatrix);*/
-    //mat4.ortho(this.oMatrix, -1, 1, -1, 1, 0,1, 10);
-
+    this.testShader = initShaders(gl, "testFShader", "testVShader",
+            ["aVertexPosition"], ["uViewPort", "uTime"]);
 
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
     gl.enable(gl.DEPTH_TEST);
@@ -85,23 +61,23 @@ GameRenderer.prototype.drawParticleShader = function(gl, scene, shaderType, came
     gl.disable(gl.BLEND);
 };
 
-GameRenderer.prototype.drawInterfaceShader = function(gl, scene, shaderType, viewPort) {
-    gl.disable(gl.DEPTH_TEST);
-    gl.enable(gl.BLEND);
-    gl.viewport(viewPort.x1, viewPort.y1, viewPort.x2, viewPort.y2);
-    var cameraMatrix = viewPort.camera.getCameraMatrix();
-    gl.useProgram(this.particleShader);
+GameRenderer.prototype.drawTestShader = function(gl, scene, shaderType, camera) {
+
+    gl.viewport(camera.viewPort.x1, camera.viewPort.y1, camera.viewPort.x2, camera.viewPort.y2);
+
+    gl.useProgram(this.testShader);
 
     for (var i = 0; i < scene.objects[shaderType].length; i++) {
         var object = scene.objects[shaderType][i];
-        mat4.multiply(cameraMatrix, object.positionMatrix, this.mvMatrix);
-        gl.uniformMatrix4fv(this.particleShader.uniform.uPMatrix, false, this.pMatrix);
-        gl.uniformMatrix4fv(this.particleShader.uniform.uMVMatrix, false, this.mvMatrix);
-
-        object.draw(gl, this.particleShader);
+        
+        gl.uniform2fv(this.testShader.uniform.uViewPort, [camera.viewPort.x2, camera.viewPort.y2]);
+        gl.uniform1f(this.testShader.uniform.uTime, scene.time);
+        
+        gl.bindBuffer(gl.ARRAY_BUFFER, object.vertexPositionBuffer);
+        gl.vertexAttribPointer(this.testShader.attribute.aVertexPosition, object.vertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        
+        object.draw(gl, this.testShader);
     }
-    gl.enable(gl.DEPTH_TEST);
-    gl.disable(gl.BLEND);
 };
 
 GameRenderer.prototype.drawDebugShader = function() {
@@ -177,14 +153,14 @@ GameRenderer.prototype.drawBasicShaderT = function(gl, scene, shaderType, camera
         gl.uniform1f(this.basicShaderT.uniform.uShininess, object.shininess);
 
         var textureUnits = [];
-        
+
         for (var j = 0; j < object.textures.length; j++) {
             gl.activeTexture(gl["TEXTURE" + j]);
             gl.bindTexture(gl.TEXTURE_2D, object.textures[j]);
             textureUnits.push(j);
-        }        
+        }
         gl.uniform1iv(this.basicShaderT.uniform.uTexture, textureUnits);
-        
+
         gl.bindBuffer(gl.ARRAY_BUFFER, object.textureCoordBuffer);
         gl.vertexAttribPointer(this.basicShaderT.attribute.aTextureCoord, object.textureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
