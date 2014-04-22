@@ -9,7 +9,7 @@ function DebugLine(input) {
     this.gl = input.gl;
     this.a = input.a;
     this.b = input.b;
-    this.shader = "drawParticleShader";
+    this.shader = "particleShader";
 
     this.initBuffers(this.gl);
 }

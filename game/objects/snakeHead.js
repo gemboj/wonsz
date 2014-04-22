@@ -6,7 +6,7 @@ function SnakeHead(input){
    this.positionMatrix = input.object.getPositionMatrix();
    mat4.rotate(this.positionMatrix, Math.PI, [1, 0, 0]);
    
-   this.shader = "drawSnakeShader";
+   this.shader = "snakeShader";
    this.tail = input.object;
    this.initBuffers(input.gl, input.object.numVertices, input.object.radius);
 };

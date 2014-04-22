@@ -5,7 +5,7 @@
 function ParticleEmitter(input) {
     this.positionMatrix = input.positionMatrix;
 
-    this.shader = "drawParticleShader";
+    this.shader = "particleShader";
     this.num = input.numParticles;
     this.color = input.color;
     this.particles = input.particles;

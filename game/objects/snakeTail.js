@@ -15,7 +15,7 @@ function SnakeTail(input) {
     this.absoluteHeadPositionMatrix = mat4.create();
     mat4.multiply(this.positionMatrix, this.relativeHeadPositionMatrix, this.absoluteHeadPositionMatrix);
 
-    this.shader = typeof input.shader == "undefined" ? "drawBasicShader" : input.shader;
+    this.shader = typeof input.shader == "undefined" ? "basicShader" : input.shader;
     this.color = [0.0, 0.0, 1.0];
     this.moveRate = 0.2;
     this.radius = 0.1;

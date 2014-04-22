@@ -4,34 +4,43 @@ function GameRenderer(gl) {
     this.mvMatrix = mat4.create();
     this.normalMatrix = mat3.create();
     //this.viewPorts = [];
-
+    this.lastShader = null;
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
-    /*this.basicShader = initShaders(gl, "basicFShader", "basicVShader",
-     ["aVertexPosition", "aVertexNormal"],
-     ["uPMatrix", "uMVMatrix", "uNMatrix", "uPointLightLocation", "uPointLightColor", "uAmbientLightColor", "uPointLightMinRange", "uPointLightMaxRange", "uColor"]);
-     
-     
-     this.basicShaderT = initShaders(gl, "basicFShaderT", "basicVShaderT",
-     ["aVertexPosition", "aVertexNormal", "aTextureCoord"],
-     ["uPMatrix", "uMVMatrix", "uNMatrix", "uPointLightLocation", "uPointLightColor", "uAmbientLightColor", "uPointLightMinRange", "uPointLightMaxRange", "uTexture[0]", "uShininess", "uPointLightNumber"]);
-     
-     
-     this.snakeShader = initShaders(gl, "snakeFShader", "snakeVShader",
-     ["aVertexPosition", "aVertexNormal"],
-     ["uMiddleRing", "uPMatrix", "uMVMatrix", "uNMatrix", "uPointLightLocation", "uPointLightColor", "uAmbientLightColor", "uPointLightMinRange", "uPointLightMaxRange", "uColor", "uSnakeLightLocation", "uSnakeLightColor", "uSnakeLightMinRange", "uSnakeLightMaxRange"]);
-     */
 
-   /* this.particleShader = initShaders(gl, "particleFShader", "particleVShader",
-            ["aParticleVelocities", "aParticlePosition"],
-            ["uPMatrix", "uMVMatrix", "uColor", "uCurrentTime", "uMaxRange", "uLifeTime"]);
-*/
-    this.testShader = initShaders(gl, "testFShader", "testVShader",
-            ["aVertexPosition"],
-            ["uViewPort", "uTime", "uTexture"]);
+    this.basicShaderProgram = initShaders(gl, "basicFShader", "basicVShader",
+        ["aVertexPosition", "aVertexNormal"],
+        ["uPMatrix", "uMVMatrix", "uNMatrix", "uPointLightLocation", "uPointLightColor", "uAmbientLightColor", "uPointLightMinRange", "uPointLightMaxRange", "uColor"]);
+
+
+    this.basicShaderTProgram = initShaders(gl, "basicFShaderT", "basicVShaderT",
+        ["aVertexPosition", "aVertexNormal", "aTextureCoord"],
+        ["uPMatrix", "uMVMatrix", "uNMatrix", "uPointLightLocation", "uPointLightColor", "uAmbientLightColor", "uPointLightMinRange", "uPointLightMaxRange", "uTexture[0]", "uShininess", "uPointLightNumber"]);
+
+
+    this.snakeShaderProgram = initShaders(gl, "snakeFShader", "snakeVShader",
+        ["aVertexPosition", "aVertexNormal"],
+        ["uMiddleRing", "uPMatrix", "uMVMatrix", "uNMatrix", "uPointLightLocation", "uPointLightColor", "uAmbientLightColor", "uPointLightMinRange", "uPointLightMaxRange", "uColor", "uSnakeLightLocation", "uSnakeLightColor", "uSnakeLightMinRange", "uSnakeLightMaxRange"]);
+
+
+    this.particleShaderProgram = initShaders(gl, "particleFShader", "particleVShader",
+        ["aParticleVelocities", "aParticlePosition"],
+        ["uPMatrix", "uMVMatrix", "uColor", "uCurrentTime", "uMaxRange", "uLifeTime"]);
+
+    this.testShaderProgram = initShaders(gl, "testFShader", "testVShader",
+        ["aVertexPosition", "aTextureCoords"],
+        ["uViewPort", "uTime", "uTexture"]);
 
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
     gl.enable(gl.DEPTH_TEST);
+}
+
+GameRenderer.prototype.renderToTexture = function(gl, scene) {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
+    this.drawFrame(gl, scene);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+    return this.frameBuffer.texture;
 }
 
 GameRenderer.prototype.drawFrame = function(gl, scene) {
@@ -41,56 +50,67 @@ GameRenderer.prototype.drawFrame = function(gl, scene) {
         var camera = scene.cameras[j];
 
         for (var shaderType in scene.objects) {
-            this[shaderType](gl, scene, shaderType, camera); //calls method 'shaderType' of this - renderer            
+            if (this.lastShader != shaderType) {
+                getAULocations(gl, this[shaderType + "Program"]);
+            }
+            this.lastShader = shaderType;
+            this[shaderType](gl, scene, shaderType, camera); //calls method 'shaderType' of this - renderer
+
         }
     }
 };
 
-GameRenderer.prototype.drawParticleShader = function(gl, scene, shaderType, camera) {
+GameRenderer.prototype.particleShader = function(gl, scene, shaderType, camera) {
     //gl.disable(gl.DEPTH_TEST);
     gl.enable(gl.BLEND);
     gl.viewport(camera.viewPort.x1, camera.viewPort.y1, camera.viewPort.x2, camera.viewPort.y2);
     var cameraMatrix = camera.getCameraMatrix();
-    gl.useProgram(this.particleShader);
+    gl.useProgram(this.particleShaderProgram);
 
     for (var i = 0; i < scene.objects[shaderType].length; i++) {
         var object = scene.objects[shaderType][i];
         mat4.multiply(cameraMatrix, object.positionMatrix, this.mvMatrix);
-        gl.uniformMatrix4fv(this.particleShader.uniform.uPMatrix, false, camera.getPerspectiveMatrix());
-        gl.uniformMatrix4fv(this.particleShader.uniform.uMVMatrix, false, this.mvMatrix);
+        gl.uniformMatrix4fv(this.particleShaderProgram.uniform.uPMatrix, false, camera.getPerspectiveMatrix());
+        gl.uniformMatrix4fv(this.particleShaderProgram.uniform.uMVMatrix, false, this.mvMatrix);
 
-        object.draw(gl, this.particleShader);
+        object.draw(gl, this.particleShaderProgram);
     }
     //gl.enable(gl.DEPTH_TEST);
     gl.disable(gl.BLEND);
 };
 
-GameRenderer.prototype.drawTestShader = function(gl, scene, shaderType, camera) {
-    gl.useProgram(this.testShader);
-    gl.viewport(camera.viewPort.x1, camera.viewPort.y1, camera.viewPort.x2, camera.viewPort.y2);
+GameRenderer.prototype.testShader = function(gl, scene, shaderType, camera) {
+    gl.useProgram(this.testShaderProgram);
 
+    gl.viewport(0, 0, 512, 512);
 
 
     for (var i = 0; i < scene.objects[shaderType].length; i++) {
         var object = scene.objects[shaderType][i];
 
-        gl.uniform2fv(this.testShader.uniform.uViewPort, [camera.viewPort.x2, camera.viewPort.y2]);
-        gl.uniform1f(this.testShader.uniform.uTime, scene.time);
-        gl.uniform1f(this.testShader.uniform.uTexture, 0.1);
+        gl.activeTexture(gl["TEXTURE0"]);
+        gl.bindTexture(gl.TEXTURE_2D, object.particleDataTexture);
+
+        gl.uniform1i(this.testShaderProgram.uniform.uTexture, 0);
+
+        gl.uniform2fv(this.testShaderProgram.uniform.uViewPort, [camera.viewPort.x2, camera.viewPort.y2]);
+        gl.uniform1f(this.testShaderProgram.uniform.uTime, scene.time);
+
+
+        gl.uniform1i(this.testShaderProgram.uniform.uTexture, 0);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, object.textureCoordBuffer);
+        gl.vertexAttribPointer(this.testShaderProgram.attribute.aTextureCoords, object.textureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, object.vertexPositionBuffer);
-        gl.vertexAttribPointer(this.testShader.attribute.aVertexPosition, object.vertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        gl.vertexAttribPointer(this.testShaderProgram.attribute.aVertexPosition, object.vertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
-        object.draw(gl, this.testShader);
+        object.draw(gl, this.testShaderProgram);
     }
 };
 
-GameRenderer.prototype.drawDebugShader = function() {
-
-};
-
-GameRenderer.prototype.drawBasicShader = function(gl, scene, shaderType, camera) {
-    gl.useProgram(this.basicShader);
+GameRenderer.prototype.basicShader = function(gl, scene, shaderType, camera) {
+    gl.useProgram(this.basicShaderProgram);
     gl.viewport(camera.viewPort.x1, camera.viewPort.y1, camera.viewPort.x2, camera.viewPort.y2);
     var cameraMatrix = camera.getCameraMatrix();
 
@@ -100,17 +120,17 @@ GameRenderer.prototype.drawBasicShader = function(gl, scene, shaderType, camera)
 
 
     var lightArray = scene.pointLight;
-    gl.uniform3fv(this.basicShader.uniform.uPointLightLocation, scene.getPointLightLocation(cameraMatrix, lightArray));
-    gl.uniform3fv(this.basicShader.uniform.uPointLightColor, scene.getPointLightColor(lightArray));
-    gl.uniform1fv(this.basicShader.uniform.uPointLightMinRange, scene.getPointLightMinRange(lightArray));
-    gl.uniform1fv(this.basicShader.uniform.uPointLightMaxRange, scene.getPointLightMaxRange(lightArray));
+    gl.uniform3fv(this.basicShaderProgram.uniform.uPointLightLocation, scene.getPointLightLocation(cameraMatrix, lightArray));
+    gl.uniform3fv(this.basicShaderProgram.uniform.uPointLightColor, scene.getPointLightColor(lightArray));
+    gl.uniform1fv(this.basicShaderProgram.uniform.uPointLightMinRange, scene.getPointLightMinRange(lightArray));
+    gl.uniform1fv(this.basicShaderProgram.uniform.uPointLightMaxRange, scene.getPointLightMaxRange(lightArray));
 
     if (typeof scene.ambientLight.color == 'undefined') {
         scene.ambientLight.color = [0.0, 0.0, 0.0];
     }
     ;
-    gl.uniform3fv(this.basicShader.uniform.uAmbientLightColor, scene.ambientLight.color);
-    gl.uniformMatrix4fv(this.basicShader.uniform.uPMatrix, false, camera.getPerspectiveMatrix());
+    gl.uniform3fv(this.basicShaderProgram.uniform.uAmbientLightColor, scene.ambientLight.color);
+    gl.uniformMatrix4fv(this.basicShaderProgram.uniform.uPMatrix, false, camera.getPerspectiveMatrix());
 
 
     for (var i = 0; i < scene.objects[shaderType].length; i++) {
@@ -120,15 +140,15 @@ GameRenderer.prototype.drawBasicShader = function(gl, scene, shaderType, camera)
         mat4.toInverseMat3(this.mvMatrix, this.normalMatrix);
         mat3.transpose(this.normalMatrix);
 
-        gl.uniformMatrix4fv(this.basicShader.uniform.uMVMatrix, false, this.mvMatrix);
-        gl.uniformMatrix3fv(this.basicShader.uniform.uNMatrix, false, this.normalMatrix);
+        gl.uniformMatrix4fv(this.basicShaderProgram.uniform.uMVMatrix, false, this.mvMatrix);
+        gl.uniformMatrix3fv(this.basicShaderProgram.uniform.uNMatrix, false, this.normalMatrix);
 
-        object.draw(gl, this.basicShader);
+        object.draw(gl, this.basicShaderProgram);
     }
 };
 
-GameRenderer.prototype.drawBasicShaderT = function(gl, scene, shaderType, camera) {
-    gl.useProgram(this.basicShaderT);
+GameRenderer.prototype.basicShaderT = function(gl, scene, shaderType, camera) {
+    gl.useProgram(this.basicShaderTProgram);
     gl.viewport(camera.viewPort.x1, camera.viewPort.y1, camera.viewPort.x2, camera.viewPort.y2);
     var cameraMatrix = camera.getCameraMatrix();
 
@@ -138,11 +158,11 @@ GameRenderer.prototype.drawBasicShaderT = function(gl, scene, shaderType, camera
 
 
     var lightArray = scene.pointLight;
-    gl.uniform3fv(this.basicShaderT.uniform.uPointLightLocation, scene.getPointLightLocation(cameraMatrix, lightArray));
-    gl.uniform3fv(this.basicShaderT.uniform.uPointLightColor, scene.getPointLightColor(lightArray));
-    gl.uniform1fv(this.basicShaderT.uniform.uPointLightMinRange, scene.getPointLightMinRange(lightArray));
-    gl.uniform1fv(this.basicShaderT.uniform.uPointLightMaxRange, scene.getPointLightMaxRange(lightArray));
-    gl.uniform1i(this.basicShaderT.uniform.uPointLightNumber, scene.pointLight.length);
+    gl.uniform3fv(this.basicShaderTProgram.uniform.uPointLightLocation, scene.getPointLightLocation(cameraMatrix, lightArray));
+    gl.uniform3fv(this.basicShaderTProgram.uniform.uPointLightColor, scene.getPointLightColor(lightArray));
+    gl.uniform1fv(this.basicShaderTProgram.uniform.uPointLightMinRange, scene.getPointLightMinRange(lightArray));
+    gl.uniform1fv(this.basicShaderTProgram.uniform.uPointLightMaxRange, scene.getPointLightMaxRange(lightArray));
+    gl.uniform1i(this.basicShaderTProgram.uniform.uPointLightNumber, scene.pointLight.length);
 
 
 
@@ -150,14 +170,14 @@ GameRenderer.prototype.drawBasicShaderT = function(gl, scene, shaderType, camera
         scene.ambientLight.color = [0.0, 0.0, 0.0];
     }
     ;
-    gl.uniform3fv(this.basicShaderT.uniform.uAmbientLightColor, scene.ambientLight.color);
-    gl.uniformMatrix4fv(this.basicShaderT.uniform.uPMatrix, false, camera.getPerspectiveMatrix());
+    gl.uniform3fv(this.basicShaderTProgram.uniform.uAmbientLightColor, scene.ambientLight.color);
+    gl.uniformMatrix4fv(this.basicShaderTProgram.uniform.uPMatrix, false, camera.getPerspectiveMatrix());
 
 
     for (var i = 0; i < scene.objects[shaderType].length; i++) {
         var object = scene.objects[shaderType][i];
 
-        gl.uniform1f(this.basicShaderT.uniform.uShininess, object.shininess);
+        gl.uniform1f(this.basicShaderTProgram.uniform.uShininess, object.shininess);
 
         var textureUnits = [];
 
@@ -166,16 +186,16 @@ GameRenderer.prototype.drawBasicShaderT = function(gl, scene, shaderType, camera
             gl.bindTexture(gl.TEXTURE_2D, object.textures[j]);
             textureUnits.push(j);
         }
-        gl.uniform1iv(this.basicShaderT.uniform.uTexture, textureUnits);
+        gl.uniform1iv(this.basicShaderTProgram.uniform.uTexture, textureUnits);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, object.textureCoordBuffer);
-        gl.vertexAttribPointer(this.basicShaderT.attribute.aTextureCoord, object.textureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        gl.vertexAttribPointer(this.basicShaderTProgram.attribute.aTextureCoord, object.textureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, object.vertexPositionBuffer);
-        gl.vertexAttribPointer(this.basicShaderT.attribute.aVertexPosition, object.vertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        gl.vertexAttribPointer(this.basicShaderTProgram.attribute.aVertexPosition, object.vertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, object.vertexNormalBuffer);
-        gl.vertexAttribPointer(this.basicShaderT.attribute.aVertexNormal, object.vertexNormalBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        gl.vertexAttribPointer(this.basicShaderTProgram.attribute.aVertexNormal, object.vertexNormalBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, object.vertexIndexBuffer);
 
@@ -183,17 +203,17 @@ GameRenderer.prototype.drawBasicShaderT = function(gl, scene, shaderType, camera
         mat4.toInverseMat3(this.mvMatrix, this.normalMatrix);
         mat3.transpose(this.normalMatrix);
 
-        gl.uniformMatrix4fv(this.basicShaderT.uniform.uMVMatrix, false, this.mvMatrix);
-        gl.uniformMatrix3fv(this.basicShaderT.uniform.uNMatrix, false, this.normalMatrix);
+        gl.uniformMatrix4fv(this.basicShaderTProgram.uniform.uMVMatrix, false, this.mvMatrix);
+        gl.uniformMatrix3fv(this.basicShaderTProgram.uniform.uNMatrix, false, this.normalMatrix);
 
-        object.draw(gl, this.basicShaderT);
+        object.draw(gl, this.basicShaderTProgram);
     }
 };
 
 
-GameRenderer.prototype.drawSnakeShader = function(gl, scene, shaderType, camera) {
+GameRenderer.prototype.snakeShader = function(gl, scene, shaderType, camera) {
 //ADD NORMAL POINT LIGHT FIRST, THEN SNAKE LIGHT    
-    gl.useProgram(this.snakeShader);
+    gl.useProgram(this.snakeShaderProgram);
     gl.viewport(camera.viewPort.x1, camera.viewPort.y1, camera.viewPort.x2, camera.viewPort.y2);
     var cameraMatrix = camera.getCameraMatrix();
 
@@ -202,15 +222,15 @@ GameRenderer.prototype.drawSnakeShader = function(gl, scene, shaderType, camera)
 
 
     var lightArray = scene.pointLight;
-    gl.uniform3fv(this.snakeShader.uniform.uPointLightLocation, scene.getPointLightLocation(cameraMatrix, lightArray));
-    gl.uniform3fv(this.snakeShader.uniform.uPointLightColor, scene.getPointLightColor(lightArray));
-    gl.uniform1fv(this.snakeShader.uniform.uPointLightMinRange, scene.getPointLightMinRange(lightArray));
-    gl.uniform1fv(this.snakeShader.uniform.uPointLightMaxRange, scene.getPointLightMaxRange(lightArray));
+    gl.uniform3fv(this.snakeShaderProgram.uniform.uPointLightLocation, scene.getPointLightLocation(cameraMatrix, lightArray));
+    gl.uniform3fv(this.snakeShaderProgram.uniform.uPointLightColor, scene.getPointLightColor(lightArray));
+    gl.uniform1fv(this.snakeShaderProgram.uniform.uPointLightMinRange, scene.getPointLightMinRange(lightArray));
+    gl.uniform1fv(this.snakeShaderProgram.uniform.uPointLightMaxRange, scene.getPointLightMaxRange(lightArray));
 
-    gl.uniform1f(this.snakeShader.uniform.uMiddleRing, typeof camera.middleRing === "undefined" ? 1.0 : 0.0/*camera.middleRing*/);
+    gl.uniform1f(this.snakeShaderProgram.uniform.uMiddleRing, typeof camera.middleRing === "undefined" ? 1.0 : 0.0/*camera.middleRing*/);
 
-    gl.uniform3fv(this.snakeShader.uniform.uAmbientLightColor, scene.ambientLight.color);
-    gl.uniformMatrix4fv(this.snakeShader.uniform.uPMatrix, false, camera.getPerspectiveMatrix());
+    gl.uniform3fv(this.snakeShaderProgram.uniform.uAmbientLightColor, scene.ambientLight.color);
+    gl.uniformMatrix4fv(this.snakeShaderProgram.uniform.uPMatrix, false, camera.getPerspectiveMatrix());
 
     for (var i = 0; i < scene.objects[shaderType].length; i++) {
         var object = scene.objects[shaderType][i];
@@ -232,10 +252,10 @@ GameRenderer.prototype.drawSnakeShader = function(gl, scene, shaderType, camera)
         mat4.toInverseMat3(this.mvMatrix, this.normalMatrix);
         mat3.transpose(this.normalMatrix);
 
-        gl.uniformMatrix4fv(this.snakeShader.uniform.uMVMatrix, false, this.mvMatrix);
-        gl.uniformMatrix3fv(this.snakeShader.uniform.uNMatrix, false, this.normalMatrix);
+        gl.uniformMatrix4fv(this.snakeShaderProgram.uniform.uMVMatrix, false, this.mvMatrix);
+        gl.uniformMatrix3fv(this.snakeShaderProgram.uniform.uNMatrix, false, this.normalMatrix);
 
-        object.draw(gl, this.snakeShader);
+        object.draw(gl, this.snakeShaderProgram);
     }
     if (typeof currentViewPortHead != "undefined") {
         gl.disable(gl.DEPTH_TEST);
@@ -246,21 +266,36 @@ GameRenderer.prototype.drawSnakeShader = function(gl, scene, shaderType, camera)
         mat4.toInverseMat3(this.mvMatrix, this.normalMatrix);
         mat3.transpose(this.normalMatrix);
 
-        gl.uniformMatrix4fv(this.snakeShader.uniform.uMVMatrix, false, this.mvMatrix);
-        gl.uniformMatrix3fv(this.snakeShader.uniform.uNMatrix, false, this.normalMatrix);
-        currentViewPortHead.draw(gl, this.snakeShader);
+        gl.uniformMatrix4fv(this.snakeShaderProgram.uniform.uMVMatrix, false, this.mvMatrix);
+        gl.uniformMatrix3fv(this.snakeShaderProgram.uniform.uNMatrix, false, this.normalMatrix);
+        currentViewPortHead.draw(gl, this.snakeShaderProgram);
 
         gl.enable(gl.DEPTH_TEST);
         gl.disable(gl.BLEND);
     }
 };
 
+GameRenderer.prototype.initRenderToTexture = function(gl) {
+    this.frameBuffer = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
+    this.frameBuffer.width = 512;
+    this.frameBuffer.height = 512;
 
+    this.frameBuffer.texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, this.frameBuffer.texture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 
-function ViewPort(camera, x1, y1, x2, y2) {
-    this.camera = camera;
-    this.x1 = x1;
-    this.x2 = x2;
-    this.y1 = y1;
-    this.y2 = y2;
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.frameBuffer.width, this.frameBuffer.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+
+    this.frameBuffer.renderBuffer = gl.createRenderbuffer();
+    gl.bindRenderbuffer(gl.RENDERBUFFER, this.frameBuffer.renderBuffer);
+    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.frameBuffer.width, this.frameBuffer.height);
+
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.frameBuffer.texture, 0);
+    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.frameBuffer.renderBuffer);
+
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 }

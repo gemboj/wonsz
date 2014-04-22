@@ -2,7 +2,7 @@ function Object3d(input) {
     this.positionMatrix = mat4.create();
     mat4.identity(this.positionMatrix);
     this.color = typeof input.color == "undefined" ? [0, 0, 0, 0] : input.color;
-    this.shader = typeof input.shader == "undefined" ? "drawBasicShaderT" : input.shader;
+    this.shader = typeof input.shader == "undefined" ? "basicShaderT" : input.shader;
     this.model = input.model.getModel();
     this.shininess = typeof input.shininess == "undefined" ? 0 : input.shininess;
     this.textures = [];
@@ -14,7 +14,7 @@ function Object3d(input) {
     this.init(input.gl);
 }
 
-Object3d.prototype.destructor = function(){
+Object3d.prototype.destructor = function() {
     this.collision.deleteObject(this);
 }
 
@@ -40,7 +40,7 @@ Object3d.prototype.init = function(gl) {
         this.textures[i] = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, this.textures[i]);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([this.color[0] * 255, this.color[1] *255, this.color[2]*255, this.color[3]*255]));
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([this.color[0] * 255, this.color[1] * 255, this.color[2] * 255, this.color[3] * 255]));
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.bindTexture(gl.TEXTURE_2D, null);
@@ -51,13 +51,7 @@ Object3d.prototype.init = function(gl) {
                     console.log("loading");
                     setTimeout(wait.bind(this, i), 100);
                 } else {
-                    this.textures[i].image = this.model.textures[i];
-                    gl.bindTexture(gl.TEXTURE_2D, this.textures[i]);
-                    /*gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);*/
-                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.textures[i].image);
-                    /*gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-                     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-                     gl.bindTexture(gl.TEXTURE_2D, null);*/
+                   this.handleLoadedTexture(gl, i);
                 }
             }
             wait.bind(this, i)();
@@ -68,7 +62,7 @@ Object3d.prototype.init = function(gl) {
         this.textures[0] = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, this.textures[0]);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([this.color[0] * 255, this.color[1] *255, this.color[2]*255, this.color[3]*255]));
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([this.color[0] * 255, this.color[1] * 255, this.color[2] * 255, this.color[3] * 255]));
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.bindTexture(gl.TEXTURE_2D, null);
@@ -100,6 +94,12 @@ Object3d.prototype.init = function(gl) {
     this.textureCoordBuffer.numItems = this.model.textureCoords.length / 2;
 };
 
+Object3d.prototype.handleLoadedTexture = function(gl, i) {
+    this.textures[i].image = this.model.textures[i];
+    gl.bindTexture(gl.TEXTURE_2D, this.textures[i]);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.textures[i].image);
+}
+
 Object3d.prototype.setPositionMatrix = function(position) {
     mat4.translate(this.positionMatrix, position);
 };
@@ -120,7 +120,7 @@ Object3d.prototype.getPositionVec = function() {
 
 Object3d.prototype.scale = function(scale) {
     mat4.scale(this.positionMatrix, scale);
-    
+
 };
 
 Object3d.prototype.rotate = function(angleX, angleY, angleZ) {
@@ -133,16 +133,16 @@ Object3d.prototype.translate = function(arr) {
     this.positionMatrix[12] += arr[0];
     this.positionMatrix[13] += arr[1];
     this.positionMatrix[14] += arr[2];
-    
+
     //mat4.translate(this.positionMatrix, [arr[0] * (1/this.positionMatrix[0]), arr[1] * (1/this.positionMatrix[5]), arr[2] * (1/this.positionMatrix[10])]);
 };
 
-Object3d.prototype.computeBoundingVolume = function(){    
+Object3d.prototype.computeBoundingVolume = function() {
     this.model.boundingVolume.computeBoundingVolume(this.getPositionMatrix());
 }
 
-Object3d.prototype.insertIntoCollision = function(collsion){
+Object3d.prototype.insertIntoCollision = function(collsion) {
     this.computeBoundingVolume();
     this.collisionGridCoords = collsion.insertObject(this);
-    
+
 }

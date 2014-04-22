@@ -13,15 +13,17 @@
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/game/objects/plane.js</file>
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/game/model.js</file>
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/game/objects/arkanoidPaddle.js</file>
-            <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/shaders/snakeVShader.txt</file>
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/game/camera.js</file>
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/game/collision/AABB.js</file>
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/game/object3d.js</file>
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/game/scene.js</file>
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/shaders/particleFShader.txt</file>
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/shaders/basicFShaderT.txt</file>
+            <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/game/objects/snakeHead.js</file>
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/shaders/snakeFShader.txt</file>
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/game/objects/cube.js</file>
+            <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/game/inputHandler.js</file>
+            <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/game/objects/debug.js</file>
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/shaders/basicVShader.txt</file>
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/game/objects/snakeTail.js</file>
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/shaders/testFShader.txt</file>

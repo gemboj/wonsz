@@ -4,10 +4,12 @@
  * @argument {optional input} {} shader, inverseNormals
  */
 function Plane(input) {
+    var gl = input.gl;
     Object3d.call(this, input);
-    this.shader = "drawTestShader"
-}
+    this.shader = "testShader"
 
+
+}
 Plane.prototype = Object.create(Object3d.prototype);
 Plane.prototype.constructor = Plane;
 
