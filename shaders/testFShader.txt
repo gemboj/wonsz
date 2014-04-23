@@ -19,7 +19,8 @@ void main(void) {
     float y = gl_FragCoord.y;
     float ktos = sin(x * sin(time)*0.1);
     float gdzies = sin(y * sin(time)*0.1);
-    if((ktos * ktos) + (gdzies * gdzies) <= 0.2){
+    //if((ktos * ktos) + (gdzies * gdzies) <= 0.2){
+if((sin(gl_FragCoord.x) < 0.5 * sin(uTime * 0.01))&&(sin(gl_FragCoord.y) < 0.5 * sin(uTime * 0.01))){
         gl_FragColor = vec4(color.rgb, 1.0);
     }
     else{

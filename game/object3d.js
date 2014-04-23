@@ -5,9 +5,15 @@ function Object3d(input) {
     this.shader = typeof input.shader == "undefined" ? "basicShaderT" : input.shader;
     this.model = input.model.getModel();
     this.shininess = typeof input.shininess == "undefined" ? 0 : input.shininess;
-    this.textures = [];
+
+
+    this.textures = [];//.image = source
+    this.defaultTextureColor = false;
+
     this.inverseNormals = typeof input.inverseNormals == "undefined" ? false : input.inverseNormals;
     this.setPositionMatrix(input.position);
+
+    this.preRenderScenes = [];
 
     this.collisionGridCoords = [];
     this.collision = input.collision;
@@ -51,14 +57,15 @@ Object3d.prototype.init = function(gl) {
                     console.log("loading");
                     setTimeout(wait.bind(this, i), 100);
                 } else {
-                   this.handleLoadedTexture(gl, i);
+                    this.handleLoadedTexture(gl, i);
                 }
             }
             wait.bind(this, i)();
         }
-
     }
+
     if (this.model.textures.length == 0) {
+        this.defaultTextureColor = true;
         this.textures[0] = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, this.textures[0]);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
@@ -98,6 +105,38 @@ Object3d.prototype.handleLoadedTexture = function(gl, i) {
     this.textures[i].image = this.model.textures[i];
     gl.bindTexture(gl.TEXTURE_2D, this.textures[i]);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.textures[i].image);
+}
+
+Object3d.prototype.addPreRenderScene = function(scene, textureUnit){
+    this.preRenderScenes.push({scene: scene, textureUnit: textureUnit, object: this});
+}
+
+Object3d.prototype.addTexture = function(gl, texture) {
+    var textureUnit;
+
+    if (this.defaultTextureColor) {
+        this.defaultTextureColor = false;
+        textureUnit = 0;
+
+        this.textures[textureUnit].image = texture;
+        gl.bindTexture(gl.TEXTURE_2D, this.textures[textureUnit]);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 512, 512, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    }
+    else {
+        textureUnit = this.textures.length;
+        
+        this.textures[textureUnit].image = texture;
+        gl.bindTexture(gl.TEXTURE_2D, this.textures[textureUnit]);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.textures[textureUnit].image);
+    }
+
+    return textureUnit;
+}
+
+Object3d.prototype.updateTexture = function(gl, texture, textureUnit) {
+    this.textures[textureUnit] = texture;
+   // gl.bindTexture(gl.TEXTURE_2D, this.textures[textureUnit]);
+   // gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, gl.createTexture());//this.textures[textureUnit]);
 }
 
 Object3d.prototype.setPositionMatrix = function(position) {

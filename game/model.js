@@ -52,9 +52,10 @@ function Model(input) {
 
 Model.prototype.flat = function(xmlObject, rawTextureCoords, rawVertices, rawNormals, rawIndices, input, model) {
     var offset = 3;
-    if (typeof input.textures != "undefined") {
+    var x = xmlObject.querySelector("[id='" + input.geometry + "-mesh-map-0-array']").innerHTML;
+    if (typeof x != "undefined") {
 
-        var x = xmlObject.querySelector("[id='" + input.geometry + "-mesh-map-0-array']").innerHTML;
+        
         rawTextureCoords = x.split(" ");
         for (var i = 0; i < rawTextureCoords.length; i++) {
             rawTextureCoords[i] = +rawTextureCoords[i];
@@ -78,13 +79,14 @@ Model.prototype.flat = function(xmlObject, rawTextureCoords, rawVertices, rawNor
             this.texturesLoaded[i] = true;
             console.log("loaded");
         }
-
+        if(typeof input.textures != "undefined"){
         for (var i = 0; i < input.textures.length; i++) {
             this.textures[i] = new Image();
             this.texturesLoaded[i] = false;
             this.textures[i].src = "game/models/" + model + "/" + input.textures[i] + ".png";
             this.textures[i].onload = loadComplete.bind(this, i);
         }
+    }
     }
     else {
         if (xmlObject.querySelector("[id='" + input.geometry + "-mesh-map-0-array']") == null) {

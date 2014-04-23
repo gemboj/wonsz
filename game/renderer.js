@@ -33,6 +33,8 @@ function GameRenderer(gl) {
 
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
     gl.enable(gl.DEPTH_TEST);
+    
+    this.initRenderToTexture(gl);
 }
 
 GameRenderer.prototype.renderToTexture = function(gl, scene) {
@@ -45,6 +47,11 @@ GameRenderer.prototype.renderToTexture = function(gl, scene) {
 
 GameRenderer.prototype.drawFrame = function(gl, scene) {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    
+    for(var i in scene.preRenderScenes){
+        var texture = this.renderToTexture(gl, scene.preRenderScenes[i].scene);
+        scene.preRenderScenes[i].object.updateTexture(gl, texture, 0);
+    }
 
     for (var j = 0; j < scene.cameras.length; j++) {
         var camera = scene.cameras[j];
@@ -89,7 +96,7 @@ GameRenderer.prototype.testShader = function(gl, scene, shaderType, camera) {
         var object = scene.objects[shaderType][i];
 
         gl.activeTexture(gl["TEXTURE0"]);
-        gl.bindTexture(gl.TEXTURE_2D, object.particleDataTexture);
+        gl.bindTexture(gl.TEXTURE_2D, object.textures[0]);
 
         gl.uniform1i(this.testShaderProgram.uniform.uTexture, 0);
 

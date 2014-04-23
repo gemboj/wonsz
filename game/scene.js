@@ -1,14 +1,23 @@
 function Scene() {
     this.objects = {};
+    
     this.cameras = [];
-    this.pointLight = [];
-    this.ambientLight = {};
+    
+    this.pointLight = [];    
+    this.ambientLight = {};  
     
     this.return = false;
+    
     this.time = 0;
+    
+    this.preRenderScenes = [];
 }
 
 Scene.prototype.addObject = function(object) {
+    if(object.preRenderScenes.length != 0){
+        this.preRenderScenes = this.preRenderScenes.concat(object.preRenderScenes);
+    }
+    
     for (var i in this.objects) {
         if (i == object.shader) {
             this.objects[i].push(object);
