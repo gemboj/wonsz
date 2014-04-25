@@ -52,8 +52,9 @@ function Model(input) {
 
 Model.prototype.flat = function(xmlObject, rawTextureCoords, rawVertices, rawNormals, rawIndices, input, model) {
     var offset = 3;
-    var x = xmlObject.querySelector("[id='" + input.geometry + "-mesh-map-0-array']").innerHTML;
-    if (typeof x != "undefined") {
+    var x = xmlObject.querySelector("[id='" + input.geometry + "-mesh-map-0-array']");
+    if (x != null) {
+        x = xmlObject.querySelector("[id='" + input.geometry + "-mesh-map-0-array']").innerHTML;
 
         
         rawTextureCoords = x.split(" ");

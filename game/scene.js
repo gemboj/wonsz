@@ -113,6 +113,10 @@ Scene.prototype.getPointLightMaxRange = function(lightArray) {
 };
 
 Scene.prototype.update = function(gl, elapsed) {
+    for(var i in this.preRenderScenes){
+        this.preRenderScenes[i].scene.update(gl, elapsed);
+    }
+    
     for (var shaderType in this.objects) {
         for (var i = 0; i < this.objects[shaderType].length; i++) {
             this.objects[shaderType][i].update(gl, elapsed, this);

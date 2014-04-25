@@ -19,8 +19,18 @@ function test(gl) {
 
     var paletka = scene.addObject(new Plane({position: [0, 0, 0], gl: gl, model: plane, color: [1, 0, 1, 1]}));
 
-    scene.addPointLight(new PointLightStatic({location: [2.0, 2.0, -7.0], color: [0.7, 0.7, 0.7], minRange: 8.0, maxRange: 100.0}));
     var camera = scene.addCamera(new CameraBasic({gl: gl, position: [0.0, 0.0, 0.0], movement: true, viewAngle: 45, moveRate: 0.05}));
+
+    return scene;
+}
+
+function testParticle(gl) {
+    var scene = new Scene();
+    var plane = new Model({geometry: "Plane", model: "plane"});
+
+    scene.addObject(new Plane({position: [0, 0, 0], gl: gl, model: plane, color: [1, 0, 1, 1]}));
+
+    scene.addCamera(new CameraBasic({gl: gl, position: [0.0, 0.0, 0.0], movement: true, viewAngle: 45, moveRate: 0.05}));
 
     return scene;
 }
@@ -28,12 +38,12 @@ function test(gl) {
 function cube(gl, testScene) {
     var scene = new Scene();
 
-    var plane = new Model({geometry: "Plane", model: "plane"});
+    //var plane = new Model({geometry: "Plane", model: "plane"});
 
-    var paletka = scene.addObject(new Plane({position: [0, 0, 0], gl: gl, model: plane, color: [1, 0, 1, 1]}));
+    //var paletka = scene.addObject(new Plane({position: [0, 0, 0], gl: gl, model: plane, color: [1, 0, 1, 1]}));
 
     var cube = new Model({geometry: "Cube", model: "Cube"});
-    var cubeTemp = new Cube({position: [2, 0, -10.0], gl: gl, model: cube, color: [Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.5, 1]});
+    var cubeTemp = new Cube({animation: true, position: [2, 0, -10.0], gl: gl, model: cube, color: [Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.5, 1]});
     var unit = cubeTemp.addTexture(gl, null);
     cubeTemp.addPreRenderScene(testScene, unit);
     scene.addAmbientLight([0.2, 0.2, 0.2]);

@@ -37,20 +37,20 @@ function GameRenderer(gl) {
     this.initRenderToTexture(gl);
 }
 
-GameRenderer.prototype.renderToTexture = function(gl, scene) {
+GameRenderer.prototype.renderToTexture = function(gl, scene, texture) {
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+    
     this.drawFrame(gl, scene);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-    return this.frameBuffer.texture;
 }
 
 GameRenderer.prototype.drawFrame = function(gl, scene) {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     
     for(var i in scene.preRenderScenes){
-        var texture = this.renderToTexture(gl, scene.preRenderScenes[i].scene);
-        scene.preRenderScenes[i].object.updateTexture(gl, texture, 0);
+        this.renderToTexture(gl, scene.preRenderScenes[i].scene, scene.preRenderScenes[i].object.textures[scene.preRenderScenes[i].textureUnit]);
+        //scene.preRenderScenes[i].object.updateTexture(gl, texture, 0);
     }
 
     for (var j = 0; j < scene.cameras.length; j++) {
@@ -100,7 +100,7 @@ GameRenderer.prototype.testShader = function(gl, scene, shaderType, camera) {
 
         gl.uniform1i(this.testShaderProgram.uniform.uTexture, 0);
 
-        gl.uniform2fv(this.testShaderProgram.uniform.uViewPort, [camera.viewPort.x2, camera.viewPort.y2]);
+        gl.uniform2fv(this.testShaderProgram.uniform.uViewPort, [512, 512]);
         gl.uniform1f(this.testShaderProgram.uniform.uTime, scene.time);
 
 
@@ -288,21 +288,5 @@ GameRenderer.prototype.initRenderToTexture = function(gl) {
     this.frameBuffer.width = 512;
     this.frameBuffer.height = 512;
 
-    this.frameBuffer.texture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, this.frameBuffer.texture);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.frameBuffer.width, this.frameBuffer.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-
-    this.frameBuffer.renderBuffer = gl.createRenderbuffer();
-    gl.bindRenderbuffer(gl.RENDERBUFFER, this.frameBuffer.renderBuffer);
-    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.frameBuffer.width, this.frameBuffer.height);
-
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.frameBuffer.texture, 0);
-    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.frameBuffer.renderBuffer);
-
-    gl.bindTexture(gl.TEXTURE_2D, null);
-    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 }
