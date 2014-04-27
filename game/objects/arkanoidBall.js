@@ -28,7 +28,7 @@ ArkanoidBall.prototype.update = function(gl, elapsed, scene) {
         }
         else {
 
-            if (collisionObject instanceof Cube) {
+            if (!(collisionObject instanceof ArkanoidPaddle)) {
                 scene.removeObject(collisionObject);
             }
 
@@ -37,7 +37,11 @@ ArkanoidBall.prototype.update = function(gl, elapsed, scene) {
             vec3.normalize(tempVec);
             this.velY = tempVec[1] * this.speed;
             this.velX = tempVec[0] * this.speed;
-            scene.addObject(new ParticleEmitter({gl: gl, positionMatrix: collisionObject.getPositionMatrix(), color: collisionObject.color, numParticles: 1000, radius: 0.1, particles: collisionObject.model.boundingParticles, velocities: collisionObject.model.boundingParticlesVelocities}));
+            scene.addObject(new ParticleEmitter({gl: gl, positionMatrix: collisionObject.getPositionMatrix(), 
+                                                 numParticles: 1000, radius: 0.1, texture: collisionObject.textures[0],
+                                                 particles: collisionObject.model.boundingParticles, 
+                                                 velocities: collisionObject.model.boundingParticlesVelocities, 
+                                                 colors: collisionObject.model.boundingParticlesColors}));
         }
     }
 }

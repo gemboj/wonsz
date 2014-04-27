@@ -3,10 +3,10 @@ function webGLStart() {
     var canvas = getCanvas();
     inputHandler = new InputHandler(canvas);
     var gl = initGl(canvas);
+var cos = 5;
 
-
-    var sscene = test(gl);
-    var scene = cube(gl, sscene);
+    var scene = arkanoid(gl);
+    //var scene = cube(gl, sscene);
 
     var renderer = new GameRenderer(gl);
 
@@ -38,9 +38,9 @@ function testParticle(gl) {
 function cube(gl, testScene) {
     var scene = new Scene();
 
-    //var plane = new Model({geometry: "Plane", model: "plane"});
+    var plane = new Model({geometry: "Plane", model: "plane"});
 
-    //var paletka = scene.addObject(new Plane({position: [0, 0, 0], gl: gl, model: plane, color: [1, 0, 1, 1]}));
+    var paletka = scene.addObject(new Plane({position: [0, 0, 0], gl: gl, model: plane, color: [1, 0, 1, 1]}));
 
     var cube = new Model({geometry: "Cube", model: "Cube"});
     var cubeTemp = new Cube({animation: true, position: [2, 0, -10.0], gl: gl, model: cube, color: [Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.5, 1]});
@@ -66,7 +66,7 @@ function arkanoid(gl) {
     var scene = new Scene();
     var cube = new Model({geometry: "Cube", model: "Cube"});
     var kula = new Model({geometry: "sphere", model: "cos"});
-    var cos = new Model({geometry: "pojazdSmooth", model: "pojazd"});
+    var cos = new Model({geometry: "pojazdSmoothT", model: "pojazd", textures: ["pojazd"]});
 
     for (var i = 0; i < 5; i++) {
         for (var j = 0; j < 4; j++) {
@@ -75,9 +75,9 @@ function arkanoid(gl) {
             cubeTemp.insertIntoCollision(collision);
         }
     }
-    var cos = scene.addObject(new Object3d({collision: collision, position: [-3, 0, -10], gl: gl, model: cos, color: [0.2, 0.2, 1, 1]}));
-    cos.scale([0.3, 0.3, 0.3]);
-    cos.insertIntoCollision(collision);
+    var cos2 = scene.addObject(new Object3d({collision: collision, position: [-3, 0, -10], gl: gl, model: cos, color: [0.2, 0.2, 1, 1]}));
+    cos2.scale([0.3, 0.3, 0.3]);
+    cos2.insertIntoCollision(collision);
 
     var paletka = scene.addObject(new ArkanoidPaddle({collision: collision, position: [0, -2, -10.0], gl: gl, model: cube, color: [1, 1, 1, 1]}));
     paletka.scale([1.4, 0.05, 1]);

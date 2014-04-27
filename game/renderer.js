@@ -24,8 +24,8 @@ function GameRenderer(gl) {
 
 
     this.particleShaderProgram = initShaders(gl, "particleFShader", "particleVShader",
-        ["aParticleVelocities", "aParticlePosition"],
-        ["uPMatrix", "uMVMatrix", "uColor", "uCurrentTime", "uMaxRange", "uLifeTime"]);
+        ["aParticleVelocities", "aParticlePosition", "aParticleColor"],
+        ["uPMatrix", "uMVMatrix", "uCurrentTime", "uMaxRange", "uLifeTime"]);
 
     this.testShaderProgram = initShaders(gl, "testFShader", "testVShader",
         ["aVertexPosition", "aTextureCoords"],

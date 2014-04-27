@@ -14,7 +14,7 @@ function Scene() {
 }
 
 Scene.prototype.addObject = function(object) {
-    if(object.preRenderScenes.length != 0){
+    if(object.preRenderScenes){
         this.preRenderScenes = this.preRenderScenes.concat(object.preRenderScenes);
     }
     

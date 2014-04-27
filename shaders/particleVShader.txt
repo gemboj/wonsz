@@ -1,5 +1,6 @@
 attribute vec3 aParticlePosition;
 attribute vec3 aParticleVelocities;
+attribute vec2 aParticleColor;//coord on texture
 
 uniform float uCurrentTime;
 uniform float uMaxRange;
@@ -9,9 +10,11 @@ uniform mat4 uMVMatrix;
 uniform mat4 uPMatrix;
 
 varying float vAlfa;
+varying vec2 vParticleColor;
 
 void main(void) {
    gl_PointSize = 1.0;
+   vParticleColor = aParticleColor;
    vAlfa = uCurrentTime/uLifeTime;
    vec4 pos = uMVMatrix * vec4(aParticlePosition + (aParticleVelocities * uMaxRange * vAlfa), 1.0);
 

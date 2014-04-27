@@ -8,6 +8,7 @@ function Model(input) {
     this.boundingVolume;
     this.boundingParticles = [];
     this.boundingParticlesVelocities = [];
+    this.boundingParticlesColors = [];
 
 
 
@@ -126,32 +127,46 @@ Model.prototype.flat = function(xmlObject, rawTextureCoords, rawVertices, rawNor
         }
     }
     
-    for (var i = 0; i < this.indices.length; i+=3){
+    for (var i = 0; i < this.indices.length; i+=3){        
         var a = [this.vertices[3*this.indices[i]], this.vertices[3*this.indices[i] +1], this.vertices[3*this.indices[i] +2]];
         var b = [this.vertices[3*this.indices[i+1]], this.vertices[3*this.indices[i+1] +1], this.vertices[3*this.indices[i+1] +2]];
         var c = [this.vertices[3*this.indices[i+2]], this.vertices[3*this.indices[i+2] +1], this.vertices[3*this.indices[i+2] +2]];
         var normal = [this.normals[3*this.indices[i]], this.normals[3*this.indices[i] +1], this.normals[3*this.indices[i] +2]]
-        this.getBoundingParticles(a, b, c);
+        
+        var aT = [this.textureCoords[2*this.indices[i]], this.textureCoords[2*this.indices[i] +1]],
+            bT = [this.textureCoords[2*this.indices[i+1]], this.textureCoords[2*this.indices[i+1] +1]],
+            cT = [this.textureCoords[2*this.indices[i+2]], this.textureCoords[2*this.indices[i+2] +1]];
+        this.getBoundingParticles(a, b, c, aT, bT, cT);
     }
 }
 
-Model.prototype.getBoundingParticles = function(a, b, c) {
+Model.prototype.getBoundingParticles = function(a, b, c, aT, bT, cT) {
     var ab = vec3.create(),
-        ac = vec3.create();
+        ac = vec3.create(),
+        abT = [],
+        acT = [];
 
     var field = (1/4) * Math.sqrt(); 
 
     vec3.subtract(b, a, ab);
     vec3.subtract(c, a, ac);
+    abT = [bT[0] - aT[0], bT[1] - aT[1]];
+    acT = [cT[0] - aT[0], cT[1] - aT[1]];
     
     for (var j = 0; j < 100; j++) {
-        var rand = Math.random();
+        var rand = Math.random(),
+            rand2 = Math.random() * (1 - rand);
 
         var sab = vec3.create();
         vec3.scale(ab, rand, sab);
 
         var sac = vec3.create();
-        vec3.scale(ac, Math.random() * (1 - rand), sac);
+        vec3.scale(ac, rand2, sac);
+
+        var sabT = [abT[0] * rand, abT[1] * rand];
+
+        var sacT = [acT[0] * rand2, acT[1] * rand2];
+
 
         var p = vec3.create();
         vec3.add(a, sab, p);
@@ -162,6 +177,10 @@ Model.prototype.getBoundingParticles = function(a, b, c) {
         vec3.subtract(p, [0,0,0], vec);
         vec3.normalize(vec);
         this.boundingParticlesVelocities.push(vec[0], vec[1], vec[2]);
+        
+        var color = [aT[0] + sabT[0] + sacT[0], aT[1] + sabT[1] + sacT[1]];
+        this.boundingParticlesColors.push(color[0], color[1]);
+        
     }
 }
 
@@ -176,5 +195,6 @@ Model.prototype.getModel = function() {
     model.boundingVolume = this.boundingVolume.clone();
     model.boundingParticles = this.boundingParticles.slice();
     model.boundingParticlesVelocities = this.boundingParticlesVelocities.slice();
+    model.boundingParticlesColors = this.boundingParticlesColors;
     return model;
 }
