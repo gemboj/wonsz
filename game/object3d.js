@@ -30,8 +30,8 @@ Object3d.prototype.draw = function(gl, shader) {
 };
 
 Object3d.prototype.update = function(gl, elapsed, scene) {
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexPositionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.model.vertices), gl.STATIC_DRAW);
+    //gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexPositionBuffer);
+    //gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.model.vertices), gl.STATIC_DRAW);
 }
 
 Object3d.prototype.init = function(gl) {

@@ -33,22 +33,22 @@ function GameRenderer(gl) {
 
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
     gl.enable(gl.DEPTH_TEST);
-    
+
     this.initRenderToTexture(gl);
 }
 
 GameRenderer.prototype.renderToTexture = function(gl, scene, texture) {
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-    
+
     this.drawFrame(gl, scene);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 }
 
 GameRenderer.prototype.drawFrame = function(gl, scene) {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    
-    for(var i in scene.preRenderScenes){
+
+    for (var i in scene.preRenderScenes) {
         this.renderToTexture(gl, scene.preRenderScenes[i].scene, scene.preRenderScenes[i].object.textures[scene.preRenderScenes[i].textureUnit]);
         //scene.preRenderScenes[i].object.updateTexture(gl, texture, 0);
     }
@@ -89,8 +89,8 @@ GameRenderer.prototype.particleShader = function(gl, scene, shaderType, camera) 
 GameRenderer.prototype.testShader = function(gl, scene, shaderType, camera) {
     gl.useProgram(this.testShaderProgram);
 
+    //gl.viewport(camera.viewPort.x1, camera.viewPort.y1, camera.viewPort.x2, camera.viewPort.y2);
     gl.viewport(0, 0, 512, 512);
-
 
     for (var i = 0; i < scene.objects[shaderType].length; i++) {
         var object = scene.objects[shaderType][i];
@@ -156,11 +156,13 @@ GameRenderer.prototype.basicShader = function(gl, scene, shaderType, camera) {
 
 GameRenderer.prototype.basicShaderT = function(gl, scene, shaderType, camera) {
     gl.useProgram(this.basicShaderTProgram);
+    //gl.viewport(0, 0, 512, 512);
     gl.viewport(camera.viewPort.x1, camera.viewPort.y1, camera.viewPort.x2, camera.viewPort.y2);
-    var cameraMatrix = camera.getCameraMatrix();
 
+    var cameraMatrix = camera.getCameraMatrix();
+    gl.enable(gl.DEPTH_TEST);
     //gl.enable(gl.CULL_FACE);
-    //gl.cullFace(gl.FRONT);
+    //gl.cullFace(gl.BACK);
 
 
 
@@ -283,10 +285,20 @@ GameRenderer.prototype.snakeShader = function(gl, scene, shaderType, camera) {
 };
 
 GameRenderer.prototype.initRenderToTexture = function(gl) {
+    var width = 512,
+        height = 512;
+    
     this.frameBuffer = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
-    this.frameBuffer.width = 512;
-    this.frameBuffer.height = 512;
+    this.frameBuffer.width = width;
+    this.frameBuffer.height = height;
 
+    this.frameBuffer.depthBuffer = gl.createRenderbuffer();
+    gl.bindRenderbuffer(gl.RENDERBUFFER, this.frameBuffer.depthBuffer);
+    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
+    
+    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.frameBuffer.depthBuffer);
+
+    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 }

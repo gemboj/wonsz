@@ -3,35 +3,26 @@ function webGLStart() {
     var canvas = getCanvas();
     inputHandler = new InputHandler(canvas);
     var gl = initGl(canvas);
-var cos = 5;
 
-    var scene = arkanoid(gl);
-    //var scene = cube(gl, sscene);
+    var sscene = arkanoid(gl);
+    var scene = test(gl, sscene);
 
     var renderer = new GameRenderer(gl);
 
     startGameLoop(gl, renderer, scene);
 }
 
-function test(gl) {
+function test(gl, testScene) {
     var scene = new Scene();
     var plane = new Model({geometry: "Plane", model: "plane"});
 
-    var paletka = scene.addObject(new Plane({position: [0, 0, 0], gl: gl, model: plane, color: [1, 0, 1, 1]}));
+    var plane = new Plane({position: [0, 0, 0], gl: gl, model: plane, color: [1, 0, 1, 1]})
 
     var camera = scene.addCamera(new CameraBasic({gl: gl, position: [0.0, 0.0, 0.0], movement: true, viewAngle: 45, moveRate: 0.05}));
-
-    return scene;
-}
-
-function testParticle(gl) {
-    var scene = new Scene();
-    var plane = new Model({geometry: "Plane", model: "plane"});
-
-    scene.addObject(new Plane({position: [0, 0, 0], gl: gl, model: plane, color: [1, 0, 1, 1]}));
-
-    scene.addCamera(new CameraBasic({gl: gl, position: [0.0, 0.0, 0.0], movement: true, viewAngle: 45, moveRate: 0.05}));
-
+    var unit = plane.addTexture(gl, null);
+    plane.addPreRenderScene(testScene, unit);
+    
+    scene.addObject(plane);
     return scene;
 }
 
@@ -93,7 +84,8 @@ function arkanoid(gl) {
     scene.addPointLight(new PointLightStatic({location: [2.0, 2.0, -7.0], color: [0.7, 0.7, 0.7], minRange: 8.0, maxRange: 100.0}));
     scene.addAmbientLight([0.2, 0.2, 0.2]);
 
-    var camera = scene.addCamera(new CameraBasic({gl: gl, position: [0.0, 0.0, 0.0], movement: true, viewAngle: 45, moveRate: 0.05}));
+    //var camera = scene.addCamera(new CameraBasic({gl: gl, position: [0.0, 0.0, 0.0], movement: true, viewAngle: 45, moveRate: 0.05}));
+    var camera = scene.addCamera(new CameraBasic({gl: gl, position: [0.0, 0.0, 0.0], movement: true, viewAngle: 45, moveRate: 0.05}), 512, 512);
 
     return scene;
 }

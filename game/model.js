@@ -177,6 +177,7 @@ Model.prototype.getBoundingParticles = function(a, b, c, aT, bT, cT) {
         vec3.subtract(p, [0,0,0], vec);
         vec3.normalize(vec);
         this.boundingParticlesVelocities.push(vec[0], vec[1], vec[2]);
+        //this.boundingParticlesVelocities.push(0, 0, 0);
         
         var color = [aT[0] + sabT[0] + sacT[0], aT[1] + sabT[1] + sacT[1]];
         this.boundingParticlesColors.push(color[0], color[1]);

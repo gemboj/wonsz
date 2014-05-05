@@ -3,6 +3,6 @@ attribute vec2 aTextureCoords;
 
 varying vec2 vTextureCoords;
 void main(void) {
-    vTextureCoords = aTextureCoords;
+   vTextureCoords = aTextureCoords;
    gl_Position = vec4(aVertexPosition, 1.0);
 }

@@ -1,23 +1,23 @@
 function Scene() {
     this.objects = {};
-    
+
     this.cameras = [];
-    
-    this.pointLight = [];    
-    this.ambientLight = {};  
-    
+
+    this.pointLight = [];
+    this.ambientLight = {};
+
     this.return = false;
-    
+
     this.time = 0;
-    
+
     this.preRenderScenes = [];
 }
 
 Scene.prototype.addObject = function(object) {
-    if(object.preRenderScenes){
+    if (object.preRenderScenes) {
         this.preRenderScenes = this.preRenderScenes.concat(object.preRenderScenes);
     }
-    
+
     for (var i in this.objects) {
         if (i == object.shader) {
             this.objects[i].push(object);
@@ -44,12 +44,20 @@ Scene.prototype.removeObject = function(object) {
     }
 };
 
-Scene.prototype.addCamera = function(cameraObj) {
+Scene.prototype.addCamera = function(cameraObj, viewportWidth, viewportHeight) {
     this.cameras.push(cameraObj);
 
-    for (var i = 0; i < this.cameras.length; i++) {
-        this.cameras[i].adjustView(i, this.cameras.length, cameraObj.gl.viewportWidth, cameraObj.gl.viewportHeight);
+    if ((viewportWidth) && (viewportHeight)) {
+        for (var i = 0; i < this.cameras.length; i++) {
+            this.cameras[i].adjustView(i, this.cameras.length, viewportWidth, viewportHeight);
+        }
     }
+    else {
+        for (var i = 0; i < this.cameras.length; i++) {
+            this.cameras[i].adjustView(i, this.cameras.length, cameraObj.gl.viewportWidth, cameraObj.gl.viewportHeight);
+        }
+    }
+
 
     return cameraObj;
 };
@@ -113,10 +121,10 @@ Scene.prototype.getPointLightMaxRange = function(lightArray) {
 };
 
 Scene.prototype.update = function(gl, elapsed) {
-    for(var i in this.preRenderScenes){
+    for (var i in this.preRenderScenes) {
         this.preRenderScenes[i].scene.update(gl, elapsed);
     }
-    
+
     for (var shaderType in this.objects) {
         for (var i = 0; i < this.objects[shaderType].length; i++) {
             this.objects[shaderType][i].update(gl, elapsed, this);
@@ -166,9 +174,9 @@ Scene.prototype.setupPlayer = function(i, object, light) {
  * @returns {Array} point Point in 3d [x, y, z]
  */
 Scene.prototype.point2DTo3D = function(input) {
-    
-    
-    
+
+
+
     var mousePositionx = input.x;
     var mousePositiony = input.y;
     var frustumPosition = typeof input.frustum == "undefined" ? -1 : input.frustum;
@@ -198,7 +206,7 @@ Scene.prototype.point2DTo3D = function(input) {
     point[0] *= point[3];
     point[2] *= point[3];
     point[1] *= point[3];
-    
+
     return {vec: [point[0], point[1], point[2]], camera: camera};
 
 };
