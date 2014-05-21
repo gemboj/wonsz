@@ -30,7 +30,13 @@ function GameRenderer(gl) {
     this.testShaderProgram = initShaders(gl, "testFShader", "testVShader",
         ["aVertexPosition", "aTextureCoords"],
         ["uViewPort", "uTime", "uTexture"]);
-
+        
+    this.particleTextureRShaderProgram = initShaders(gl, "particleTextureRFShader", "particleTextureRVShader",
+        ["aVertexPosition", "aTextureCoords"],
+        ["uTexture"]);
+    
+    if ( !gl.getExtension( 'OES_texture_float' ) ) alert( 'Float textures not supported' );
+    
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
     gl.enable(gl.DEPTH_TEST);
 
@@ -66,6 +72,26 @@ GameRenderer.prototype.drawFrame = function(gl, scene) {
         }
     }
 };
+GameRenderer.prototype.particleTextureRShader = function(gl, scene, shaderType, camera){
+    gl.useProgram(this.particleTextureRShaderProgram);
+    gl.viewport(camera.viewPort.x1, camera.viewPort.y1, camera.viewPort.x2, camera.viewPort.y2);
+    
+    for(var i = 0; i < scene.objects[shaderType].length; i++){
+        var object = scene.objects[shaderType][i];
+        
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, object.textures[0]);
+        gl.uniform1i(this.particleTextureRShaderProgram.uniform.uTexture, 0);
+        
+        gl.bindBuffer(gl.ARRAY_BUFFER, object.textureCoordBuffer);
+        gl.vertexAttribPointer(this.particleTextureRShaderProgram.attribute.aTextureCoords, object.textureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, object.vertexPositionBuffer);
+        gl.vertexAttribPointer(this.particleTextureRShaderProgram.attribute.aVertexPosition, object.vertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        
+        object.draw(gl, this.particleTextureRShaderProgram);
+    }
+}
 
 GameRenderer.prototype.particleShader = function(gl, scene, shaderType, camera) {
     //gl.disable(gl.DEPTH_TEST);

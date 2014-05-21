@@ -4,10 +4,11 @@ function webGLStart() {
     inputHandler = new InputHandler(canvas);
     var gl = initGl(canvas);
 
-    var sscene = arkanoid(gl);
-    var scene = test(gl, sscene);
-
+    //var scene = arkanoid(gl);
+    //var scene = test(gl, sscene);
     var renderer = new GameRenderer(gl);
+    var scene = particleTest(gl);
+    
 
     startGameLoop(gl, renderer, scene);
 }
@@ -19,10 +20,22 @@ function test(gl, testScene) {
     var plane = new Plane({position: [0, 0, 0], gl: gl, model: plane, color: [1, 0, 1, 1]})
 
     var camera = scene.addCamera(new CameraBasic({gl: gl, position: [0.0, 0.0, 0.0], movement: true, viewAngle: 45, moveRate: 0.05}));
-    var unit = plane.addTexture(gl, null);
+    //var unit = plane.addTexture(gl, null, 512, 512);
     plane.addPreRenderScene(testScene, unit);
     
     scene.addObject(plane);
+    return scene;
+}
+
+function particleTest(gl){
+    var scene = new Scene();
+    
+    var plane = new Model({geometry: "Plane", model: "plane"});
+    
+    var cos = scene.addObject(new Plane({position: [0,0,0], gl: gl, model: plane, shader: "particleTextureRShader"}));
+    
+    var camera = scene.addCamera(new CameraBasic({gl: gl, position: [0, 0, 0], movement: true, viewAngle: 45, moveRate: 0.05}));
+
     return scene;
 }
 
@@ -35,7 +48,7 @@ function cube(gl, testScene) {
 
     var cube = new Model({geometry: "Cube", model: "Cube"});
     var cubeTemp = new Cube({animation: true, position: [2, 0, -10.0], gl: gl, model: cube, color: [Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.5, 1]});
-    var unit = cubeTemp.addTexture(gl, null);
+    var unit = cubeTemp.addTexture(gl, null, 512, 512);
     cubeTemp.addPreRenderScene(testScene, unit);
     scene.addAmbientLight([0.2, 0.2, 0.2]);
 
@@ -84,8 +97,8 @@ function arkanoid(gl) {
     scene.addPointLight(new PointLightStatic({location: [2.0, 2.0, -7.0], color: [0.7, 0.7, 0.7], minRange: 8.0, maxRange: 100.0}));
     scene.addAmbientLight([0.2, 0.2, 0.2]);
 
-    //var camera = scene.addCamera(new CameraBasic({gl: gl, position: [0.0, 0.0, 0.0], movement: true, viewAngle: 45, moveRate: 0.05}));
-    var camera = scene.addCamera(new CameraBasic({gl: gl, position: [0.0, 0.0, 0.0], movement: true, viewAngle: 45, moveRate: 0.05}), 512, 512);
+    var camera = scene.addCamera(new CameraBasic({gl: gl, position: [0.0, 0.0, 0.0], movement: true, viewAngle: 45, moveRate: 0.05}));
+    //var camera = scene.addCamera(new CameraBasic({gl: gl, position: [0.0, 0.0, 0.0], movement: true, viewAngle: 45, moveRate: 0.05}), 512, 512);
 
     return scene;
 }

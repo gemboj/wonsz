@@ -111,7 +111,7 @@ Object3d.prototype.addPreRenderScene = function(scene, textureUnit){
     this.preRenderScenes.push({scene: scene, textureUnit: textureUnit, object: this});
 }
 
-Object3d.prototype.addTexture = function(gl, texture) {
+Object3d.prototype.addTexture = function(gl, texture, width, height) {
     var textureUnit;
 
     if (this.defaultTextureColor) {
@@ -120,9 +120,10 @@ Object3d.prototype.addTexture = function(gl, texture) {
 
         this.textures[textureUnit].image = texture;
         gl.bindTexture(gl.TEXTURE_2D, this.textures[textureUnit]);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 512, 512, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
     }
     else {
+        alert("not supported adding not null texture to object");
         textureUnit = this.textures.length;
         
         this.textures[textureUnit].image = texture;
