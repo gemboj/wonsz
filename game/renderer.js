@@ -9,34 +9,41 @@ function GameRenderer(gl) {
 
 
     this.basicShaderProgram = initShaders(gl, "basicFShader", "basicVShader",
-        ["aVertexPosition", "aVertexNormal"],
-        ["uPMatrix", "uMVMatrix", "uNMatrix", "uPointLightLocation", "uPointLightColor", "uAmbientLightColor", "uPointLightMinRange", "uPointLightMaxRange", "uColor"]);
+            ["aVertexPosition", "aVertexNormal"],
+            ["uPMatrix", "uMVMatrix", "uNMatrix", "uPointLightLocation", "uPointLightColor", "uAmbientLightColor", "uPointLightMinRange", "uPointLightMaxRange", "uColor"]);
 
 
     this.basicShaderTProgram = initShaders(gl, "basicFShaderT", "basicVShaderT",
-        ["aVertexPosition", "aVertexNormal", "aTextureCoord"],
-        ["uPMatrix", "uMVMatrix", "uNMatrix", "uPointLightLocation", "uPointLightColor", "uAmbientLightColor", "uPointLightMinRange", "uPointLightMaxRange", "uTexture[0]", "uShininess", "uPointLightNumber"]);
+            ["aVertexPosition", "aVertexNormal", "aTextureCoord"],
+            ["uPMatrix", "uMVMatrix", "uNMatrix", "uPointLightLocation", "uPointLightColor", "uAmbientLightColor", "uPointLightMinRange", "uPointLightMaxRange", "uTexture[0]", "uShininess", "uPointLightNumber"]);
 
 
     this.snakeShaderProgram = initShaders(gl, "snakeFShader", "snakeVShader",
-        ["aVertexPosition", "aVertexNormal"],
-        ["uMiddleRing", "uPMatrix", "uMVMatrix", "uNMatrix", "uPointLightLocation", "uPointLightColor", "uAmbientLightColor", "uPointLightMinRange", "uPointLightMaxRange", "uColor", "uSnakeLightLocation", "uSnakeLightColor", "uSnakeLightMinRange", "uSnakeLightMaxRange"]);
+            ["aVertexPosition", "aVertexNormal"],
+            ["uMiddleRing", "uPMatrix", "uMVMatrix", "uNMatrix", "uPointLightLocation", "uPointLightColor", "uAmbientLightColor", "uPointLightMinRange", "uPointLightMaxRange", "uColor", "uSnakeLightLocation", "uSnakeLightColor", "uSnakeLightMinRange", "uSnakeLightMaxRange"]);
 
 
     this.particleShaderProgram = initShaders(gl, "particleFShader", "particleVShader",
-        ["aParticleVelocities", "aParticlePosition", "aParticleColor"],
-        ["uPMatrix", "uMVMatrix", "uCurrentTime", "uMaxRange", "uLifeTime"]);
+            ["aParticleVelocities", "aParticlePosition", "aParticleColor"],
+            ["uPMatrix", "uMVMatrix", "uCurrentTime", "uMaxRange", "uLifeTime"]);
 
     this.testShaderProgram = initShaders(gl, "testFShader", "testVShader",
-        ["aVertexPosition", "aTextureCoords"],
-        ["uViewPort", "uTime", "uTexture"]);
-        
+            ["aVertexPosition", "aTextureCoords"],
+            ["uViewPort", "uTime", "uTexture"]);
+
+    //Render
     this.particleTextureRShaderProgram = initShaders(gl, "particleTextureRFShader", "particleTextureRVShader",
-        ["aVertexPosition", "aTextureCoords"],
-        ["uTexture"]);
-    
-    if ( !gl.getExtension( 'OES_texture_float' ) ) alert( 'Float textures not supported' );
-    
+            ["aUVCoords"],
+            ["uTexture"]);
+
+    //Physics    
+    this.particleTexturePShaderProgram = initShaders(gl, "particleTexturePFShader", "particleTexturePVShader",
+            ["aVertexPosition"],
+            ["uTexture", "uViewPort"]);
+
+    if (!gl.getExtension('OES_texture_float'))
+        alert('Float textures not supported');
+
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
     gl.enable(gl.DEPTH_TEST);
 
@@ -72,24 +79,41 @@ GameRenderer.prototype.drawFrame = function(gl, scene) {
         }
     }
 };
-GameRenderer.prototype.particleTextureRShader = function(gl, scene, shaderType, camera){
+GameRenderer.prototype.particleTextureRShader = function(gl, scene, shaderType, camera) {
     gl.useProgram(this.particleTextureRShaderProgram);
     gl.viewport(camera.viewPort.x1, camera.viewPort.y1, camera.viewPort.x2, camera.viewPort.y2);
-    
-    for(var i = 0; i < scene.objects[shaderType].length; i++){
+
+    for (var i = 0; i < scene.objects[shaderType].length; i++) {
         var object = scene.objects[shaderType][i];
-        
+
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, object.textures[0]);
         gl.uniform1i(this.particleTextureRShaderProgram.uniform.uTexture, 0);
-        
-        gl.bindBuffer(gl.ARRAY_BUFFER, object.textureCoordBuffer);
-        gl.vertexAttribPointer(this.particleTextureRShaderProgram.attribute.aTextureCoords, object.textureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, object.UVCoordsBuffer);
+        gl.vertexAttribPointer(this.particleTextureRShaderProgram.attribute.aUVCoords, object.UVCoordsBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+        object.draw(gl, this.particleTextureRShaderProgram);
+    }
+}
+
+GameRenderer.prototype.particleTexturePShader = function(gl, scene, shaderType, camera) {
+    gl.useProgram(this[shaderType + "Program"]);
+    gl.viewport(camera.viewPort.x1, camera.viewPort.y1, camera.viewPort.x2, camera.viewPort.y2);
+
+    for (var i = 0; i < scene.objects[shaderType].length; i++) {
+        var object = scene.objects[shaderType][i];
+
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, object.textures[0]);
+        gl.uniform1i(this.particleTexturePShaderProgram.uniform.uTexture, 0);
+
+        gl.uniform2fv(this.particleTexturePShaderProgram.uniform.uViewPort, [camera.viewPort.x2, camera.viewPort.y2]);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, object.vertexPositionBuffer);
-        gl.vertexAttribPointer(this.particleTextureRShaderProgram.attribute.aVertexPosition, object.vertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        gl.vertexAttribPointer(this.particleTexturePShaderProgram.attribute.aVertexPosition, object.vertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
         
-        object.draw(gl, this.particleTextureRShaderProgram);
+        object.draw(gl, this.particleTexturePShaderProgram);
     }
 }
 
@@ -115,8 +139,8 @@ GameRenderer.prototype.particleShader = function(gl, scene, shaderType, camera) 
 GameRenderer.prototype.testShader = function(gl, scene, shaderType, camera) {
     gl.useProgram(this.testShaderProgram);
 
-    //gl.viewport(camera.viewPort.x1, camera.viewPort.y1, camera.viewPort.x2, camera.viewPort.y2);
-    gl.viewport(0, 0, 512, 512);
+    gl.viewport(camera.viewPort.x1, camera.viewPort.y1, camera.viewPort.x2, camera.viewPort.y2);
+    //gl.viewport(0, 0, 512, 512);
 
     for (var i = 0; i < scene.objects[shaderType].length; i++) {
         var object = scene.objects[shaderType][i];
@@ -126,11 +150,11 @@ GameRenderer.prototype.testShader = function(gl, scene, shaderType, camera) {
 
         gl.uniform1i(this.testShaderProgram.uniform.uTexture, 0);
 
-        gl.uniform2fv(this.testShaderProgram.uniform.uViewPort, [512, 512]);
+        gl.uniform2fv(this.testShaderProgram.uniform.uViewPort, [camera.viewPort.x2, camera.viewPort.y2]);
         gl.uniform1f(this.testShaderProgram.uniform.uTime, scene.time);
 
 
-        gl.uniform1i(this.testShaderProgram.uniform.uTexture, 0);
+        //gl.uniform1i(this.testShaderProgram.uniform.uTexture, 0);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, object.textureCoordBuffer);
         gl.vertexAttribPointer(this.testShaderProgram.attribute.aTextureCoords, object.textureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
@@ -311,20 +335,20 @@ GameRenderer.prototype.snakeShader = function(gl, scene, shaderType, camera) {
 };
 
 GameRenderer.prototype.initRenderToTexture = function(gl) {
-    var width = 512,
-        height = 512;
-    
+    var width = 8,
+            height = 8;
+
     this.frameBuffer = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
     this.frameBuffer.width = width;
     this.frameBuffer.height = height;
 
-    this.frameBuffer.depthBuffer = gl.createRenderbuffer();
-    gl.bindRenderbuffer(gl.RENDERBUFFER, this.frameBuffer.depthBuffer);
-    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
-    
-    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.frameBuffer.depthBuffer);
+    //this.frameBuffer.depthBuffer = gl.createRenderbuffer();
+    //gl.bindRenderbuffer(gl.RENDERBUFFER, this.frameBuffer.depthBuffer);
+    //gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
 
-    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+    //gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.frameBuffer.depthBuffer);
+
+    //gl.bindRenderbuffer(gl.RENDERBUFFER, null);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 }

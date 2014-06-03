@@ -8,7 +8,7 @@ function webGLStart() {
     //var scene = test(gl, sscene);
     var renderer = new GameRenderer(gl);
     var scene = particleTest(gl);
-    
+
 
     startGameLoop(gl, renderer, scene);
 }
@@ -22,21 +22,41 @@ function test(gl, testScene) {
     var camera = scene.addCamera(new CameraBasic({gl: gl, position: [0.0, 0.0, 0.0], movement: true, viewAngle: 45, moveRate: 0.05}));
     //var unit = plane.addTexture(gl, null, 512, 512);
     plane.addPreRenderScene(testScene, unit);
-    
+
     scene.addObject(plane);
     return scene;
 }
 
-function particleTest(gl){
-    var scene = new Scene();
-    
-    var plane = new Model({geometry: "Plane", model: "plane"});
-    
-    var cos = scene.addObject(new Plane({position: [0,0,0], gl: gl, model: plane, shader: "particleTextureRShader"}));
-    
-    var camera = scene.addCamera(new CameraBasic({gl: gl, position: [0, 0, 0], movement: true, viewAngle: 45, moveRate: 0.05}));
+function particleTest(gl) {
 
-    return scene;
+
+    var frameBH = 4,
+            frameBW = frameBH;///2;
+
+    var plane = new Model({geometry: "Plane", model: "plane"});
+
+    var cos = new Plane({position: [0, 0, 0], gl: gl, model: plane, shader: "particleTexturePShader", tex: true});
+    var cos2 = new Plane({position: [0, 0, 0], gl: gl, model: plane, shader: "particleTextureRShader", texObj: cos});
+    var unit = cos2.addTexture(gl, null, frameBH, frameBW);
+    //var temp = cos.textures[0];
+    //cos.textures[0] = cos2.textures[0];
+    //cos2.textures[0] = temp;
+    
+    
+    
+    var scene = new Scene();
+    var scene2 = new Scene();
+
+    var camera = scene.addCamera(new CameraBasic({gl: gl, position: [0, 0, 0], movement: true, viewAngle: 45, moveRate: 0.05}), frameBH, frameBW);
+    var camera2 = scene2.addCamera(new CameraBasic({gl: gl, position: [0, 0, 0], movement: true, viewAngle: 45, moveRate: 0.05}));
+    cos2.addPreRenderScene(scene, 0);
+    
+    
+    
+    scene.addObject(cos);
+    scene2.addObject(cos2);
+
+    return scene2;
 }
 
 function cube(gl, testScene) {
