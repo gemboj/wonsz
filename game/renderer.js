@@ -34,12 +34,12 @@ function GameRenderer(gl) {
     //Render
     this.particleTextureRShaderProgram = initShaders(gl, "particleTextureRFShader", "particleTextureRVShader",
             ["aUVCoords"],
-            ["uTexture"]);
+            ["uTexture", "uTexture2", "uWidth", "uHeight"]);
 
     //Physics    
     this.particleTexturePShaderProgram = initShaders(gl, "particleTexturePFShader", "particleTexturePVShader",
             ["aVertexPosition"],
-            ["uTexture", "uViewPort"]);
+            ["uTexture", "uViewPort", "uMouseDown", "uMousePos", "uStop"]);
 
     if (!gl.getExtension('OES_texture_float'))
         alert('Float textures not supported');
@@ -87,9 +87,15 @@ GameRenderer.prototype.particleTextureRShader = function(gl, scene, shaderType, 
         var object = scene.objects[shaderType][i];
 
         gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, object.textures[0]);
+        gl.bindTexture(gl.TEXTURE_2D, object.textures[1]);
         gl.uniform1i(this.particleTextureRShaderProgram.uniform.uTexture, 0);
 
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, object.textures[0]);
+        gl.uniform1i(this.particleTextureRShaderProgram.uniform.uTexture2, 1);
+
+        gl.uniform1i(this.particleTextureRShaderProgram.uniform.uWidth, object.particleWidth);
+        gl.uniform1i(this.particleTextureRShaderProgram.uniform.uHeight, object.particleHeight);
         gl.bindBuffer(gl.ARRAY_BUFFER, object.UVCoordsBuffer);
         gl.vertexAttribPointer(this.particleTextureRShaderProgram.attribute.aUVCoords, object.UVCoordsBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
@@ -109,7 +115,9 @@ GameRenderer.prototype.particleTexturePShader = function(gl, scene, shaderType, 
         gl.uniform1i(this.particleTexturePShaderProgram.uniform.uTexture, 0);
 
         gl.uniform2fv(this.particleTexturePShaderProgram.uniform.uViewPort, [camera.viewPort.x2, camera.viewPort.y2]);
-
+        gl.uniform2fv(this.particleTexturePShaderProgram.uniform.uMousePos, [inputHandler.mouse.position.x, inputHandler.mouse.position.y]);
+        gl.uniform1i(this.particleTexturePShaderProgram.uniform.uMouseDown, inputHandler.mouse.down);
+        gl.uniform1i(this.particleTexturePShaderProgram.uniform.uStop, inputHandler.keyboard.pressedKeys[32]);
         gl.bindBuffer(gl.ARRAY_BUFFER, object.vertexPositionBuffer);
         gl.vertexAttribPointer(this.particleTexturePShaderProgram.attribute.aVertexPosition, object.vertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
         
@@ -335,8 +343,8 @@ GameRenderer.prototype.snakeShader = function(gl, scene, shaderType, camera) {
 };
 
 GameRenderer.prototype.initRenderToTexture = function(gl) {
-    var width = 8,
-            height = 8;
+    var width = 512,
+            height = 512;
 
     this.frameBuffer = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);

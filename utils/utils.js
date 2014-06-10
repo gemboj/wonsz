@@ -34,9 +34,9 @@ window.requestAnimFrame = (function() {
 })();
 
 function getCanvas() {
-    var canvas = document.getElementById("canvas");
-    canvas.height = document.body.clientHeight;
+    var canvas = document.getElementById("canvas");    
     canvas.width = document.body.clientWidth;
+    canvas.height = document.body.clientHeight;
     return canvas;
 }
 

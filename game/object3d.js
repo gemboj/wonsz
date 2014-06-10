@@ -111,6 +111,22 @@ Object3d.prototype.addPreRenderScene = function(scene, textureUnit){
     this.preRenderScenes.push({scene: scene, textureUnit: textureUnit, object: this});
 }
 
+Object3d.prototype.addTextureUnit = function(gl, texture, width, height, textureUnit) {     
+             
+        this.textures[textureUnit] = gl.createTexture();
+        this.textures[textureUnit].image = texture;  
+        gl.bindTexture(gl.TEXTURE_2D, this.textures[textureUnit]);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.FLOAT, null);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.bindTexture(gl.TEXTURE_2D, null);
+        
+    
+
+    return textureUnit;
+}
+
 Object3d.prototype.addTexture = function(gl, texture, width, height) {
     var textureUnit;
 
@@ -120,15 +136,21 @@ Object3d.prototype.addTexture = function(gl, texture, width, height) {
 
         this.textures[textureUnit].image = texture;
         gl.bindTexture(gl.TEXTURE_2D, this.textures[textureUnit]);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.FLOAT, null);
     }
     else {
-        alert("not supported adding not null texture to object");
-        textureUnit = this.textures.length;
-        
-        this.textures[textureUnit].image = texture;
+        //alert("not supported adding not null texture to object");
+        textureUnit = this.textures.length-1;       
+             
+        this.textures[textureUnit] = gl.createTexture();
+        this.textures[textureUnit].image = texture;  
         gl.bindTexture(gl.TEXTURE_2D, this.textures[textureUnit]);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.textures[textureUnit].image);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.FLOAT, null);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.bindTexture(gl.TEXTURE_2D, null);
+        
     }
 
     return textureUnit;

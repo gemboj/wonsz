@@ -1,56 +1,65 @@
 precision mediump float;
 
 uniform sampler2D uTexture;
+uniform bool uMouseDown;
+uniform bool uStop;
+
+uniform vec2 uMousePos;
 uniform vec2 uViewPort;
 
 void main(void) {
-/*vec4 pos = texture2D(uTexture, gl_FragCoord.xy / uViewPort);
-gl_FragColor = pos;*/
-
     int slot = int(mod(gl_FragCoord.x, 2.0));
+    vec2 particleVel;
 
     if(slot == 0){//position
-        vec2 pos = (texture2D(uTexture, gl_FragCoord.xy / uViewPort)).xy * 2.0 - 1.0;
-        vec2 vel = (texture2D(uTexture, (gl_FragCoord.xy + vec2(1.0, 0.0))/uViewPort)).xy * 2.0 - 1.0;
+        vec4 pos = (texture2D(uTexture, gl_FragCoord.xy / uViewPort));
+        vec4 vel = (texture2D(uTexture, (gl_FragCoord.xy + vec2(1.0, 0.0))/uViewPort));
+        
+        pos += vel;  
 
-        //pos += vel/100.0;
-        /*if(pos.x >= 1.0){
-            pos.x = 1.0;
-        }
         if(pos.x <= -1.0){
             pos.x = -1.0;
         }
-
-        if(pos.y >= 1.0){
-            pos.y = 1.0;
+        else if(pos.x >= 1.0){
+            pos.x = 1.0;
         }
+
         if(pos.y <= -1.0){
             pos.y = -1.0;
-        }*/
-//gl_FragColor = vec4(1000.0/1920.0, 600.0/961.0, 0.0, 1.0);
-        gl_FragColor = vec4((1.0 + pos) / 2.0, 0.0, 1.0);
-        
+        }
+        else if(pos.y >= 1.0){
+            pos.y = 1.0;
+        }
+        gl_FragColor = pos;
     }
     else{//velocity
-        vec2 pos = (texture2D(uTexture, (gl_FragCoord.xy - vec2(1.0, 0.0))/uViewPort)).xy * 2.0 - 1.0;
-        vec2 vel = (texture2D(uTexture, gl_FragCoord.xy / uViewPort)).xy * 2.0 - 1.0;
+        vec4 pos = (texture2D(uTexture, (gl_FragCoord.xy - vec2(1.0, 0.0))/uViewPort));
+        vec4 vel = (texture2D(uTexture, gl_FragCoord.xy / uViewPort));
         
-        //vel = -pos;
 
-        /*
-        if(pos.x == 1.0){            
-            vel.x = (vel.x * (-1.0));
+        if(uMouseDown){
+            particleVel = ((uMousePos - pos.xy)/(distance(uMousePos, pos.xy)))/1000.0;
+
+            vel.xy += particleVel;
+            
         }
-        if(pos.x <= -1.0){
-            vel.x = 1.0;
+        if(!uStop){
+
+        vel.xy = vel.xy*0.99;
+
+        pos += vel;
+                
+        if((pos.x >= 1.0)||(pos.x <= -1.0)){
+            vel.x *= -1.0;
         }
 
         if((pos.y >= 1.0)||(pos.y <= -1.0)){
             vel.y *= -1.0;
-        }*/
-
-        //gl_FragColor = vec4(vec2((vel + 1.0) / 2.0), 0.0, 1.0);
-        //gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
-        gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+        }
+        }
+        else{
+            vel.xy = vec2(0.0, 0.0);
+        }
+        gl_FragColor = vel;
     }
 }

@@ -4,10 +4,10 @@ function webGLStart() {
     inputHandler = new InputHandler(canvas);
     var gl = initGl(canvas);
 
-    //var scene = arkanoid(gl);
+    var sscene = arkanoid(gl);
     //var scene = test(gl, sscene);
     var renderer = new GameRenderer(gl);
-    var scene = particleTest(gl);
+    var scene = particleTest(gl, sscene);
 
 
     startGameLoop(gl, renderer, scene);
@@ -27,30 +27,37 @@ function test(gl, testScene) {
     return scene;
 }
 
-function particleTest(gl) {
+function particleTest(gl, arkanoid) {
 
 
-    var frameBH = 4,
-            frameBW = frameBH;///2;
+    var frameBW = 1024,
+        frameBH = 512,
+        slots = 2;
 
     var plane = new Model({geometry: "Plane", model: "plane"});
-
-    var cos = new Plane({position: [0, 0, 0], gl: gl, model: plane, shader: "particleTexturePShader", tex: true});
-    var cos2 = new Plane({position: [0, 0, 0], gl: gl, model: plane, shader: "particleTextureRShader", texObj: cos});
-    var unit = cos2.addTexture(gl, null, frameBH, frameBW);
-    //var temp = cos.textures[0];
-    //cos.textures[0] = cos2.textures[0];
-    //cos2.textures[0] = temp;
+    var plane2 = new Model({geometry: "Plane", model: "plane"});
+    var cos = new Plane({position: [0, 0, 0], gl: gl, model: plane2, shader: "particleTexturePShader", tex: true, particleWidth: frameBW, particleHeight: frameBH, particleSlots: slots});
+    var cos2 = new Plane({position: [0, 0, 0], gl: gl, model: plane, shader: "particleTextureRShader", texObj: cos, particleWidth: frameBW, particleHeight: frameBH, particleSlots: slots});
+    //
+    //cos2.addTexture(gl, null, frameBW * slots, frameBH);
+    cos2.textures.push({});
+    cos2.addTextureUnit(gl, null, frameBW * slots, frameBH, 1);
+    cos2.addTextureUnit(gl, null, 1024, 512, 0);
+    //cos2.textures = cos2.textures.slice(1,2);
     
+    inputHandler.addOnClickEvent(function(){
+        this.mouse.position.x = this.mouse.position.x * 2.0/gl.viewportWidth - 1.0;
+        this.mouse.position.y = (this.mouse.position.y * (2.0/gl.viewportHeight) -1.0) * -1.0;        
+    });
     
     
     var scene = new Scene();
     var scene2 = new Scene();
 
-    var camera = scene.addCamera(new CameraBasic({gl: gl, position: [0, 0, 0], movement: true, viewAngle: 45, moveRate: 0.05}), frameBH, frameBW);
+    var camera = scene.addCamera(new CameraBasic({gl: gl, position: [0, 0, 0], movement: true, viewAngle: 45, moveRate: 0.05}), frameBW * slots, frameBH);
     var camera2 = scene2.addCamera(new CameraBasic({gl: gl, position: [0, 0, 0], movement: true, viewAngle: 45, moveRate: 0.05}));
-    cos2.addPreRenderScene(scene, 0);
-    
+    cos2.addPreRenderScene(scene, 1);
+    cos2.addPreRenderScene(arkanoid, 0);
     
     
     scene.addObject(cos);
@@ -92,6 +99,9 @@ function arkanoid(gl) {
     var kula = new Model({geometry: "sphere", model: "cos"});
     var cos = new Model({geometry: "pojazdSmoothT", model: "pojazd", textures: ["pojazd"]});
 
+    var cube1 = scene.addObject(new Cube({inverseNormals: true, position: [0, 0.5, -10.0], gl: gl, model: cube, color: [0.5, 0.5, 0.5, 1]}));
+    cube1.scale([5, 3.5, 10]);
+
     for (var i = 0; i < 5; i++) {
         for (var j = 0; j < 4; j++) {
             var cubeTemp = scene.addObject(new Cube({collision: collision, position: [i * 2 - 4, j * 0.4 + 2, -10.0], gl: gl, model: cube, color: [Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.5, 1]}));
@@ -110,15 +120,14 @@ function arkanoid(gl) {
     var kulka = scene.addObject(new ArkanoidBall({position: [0, 0, -10.0], gl: gl, model: kula, color: [1, 1, 1, 1], collision: collision}));
     kulka.scale([0.3, 0.3, 0.3]);
 
-    var cube1 = scene.addObject(new Cube({inverseNormals: true, position: [0, 0.5, -10.0], gl: gl, model: cube, color: [0.5, 0.5, 0.5, 1]}));
-    cube1.scale([5, 3.5, 10]);
+    
 
     scene.addPointLight(new PointLightFollow({object: kulka, minRange: 0.5, maxRange: 1, color: [1, 0, 0]}));
     scene.addPointLight(new PointLightStatic({location: [2.0, 2.0, -7.0], color: [0.7, 0.7, 0.7], minRange: 8.0, maxRange: 100.0}));
     scene.addAmbientLight([0.2, 0.2, 0.2]);
 
-    var camera = scene.addCamera(new CameraBasic({gl: gl, position: [0.0, 0.0, 0.0], movement: true, viewAngle: 45, moveRate: 0.05}));
-    //var camera = scene.addCamera(new CameraBasic({gl: gl, position: [0.0, 0.0, 0.0], movement: true, viewAngle: 45, moveRate: 0.05}), 512, 512);
+    //var camera = scene.addCamera(new CameraBasic({gl: gl, position: [0.0, 0.0, 0.0], movement: true, viewAngle: 45, moveRate: 0.05}));
+    var camera = scene.addCamera(new CameraBasic({gl: gl, position: [0.0, 0.0, 0.0], movement: true, viewAngle: 45, moveRate: 0.05}), 1024, 512);
 
     return scene;
 }

@@ -4,8 +4,11 @@
  * @argument {optional input} {} shader, inverseNormals
  */
 function Plane(input) {
-    var gl = input.gl;
-
+    this.gl = input.gl;
+    this.particleWidth = input.particleWidth;
+    this.particleHeight = input.particleHeight;
+    this.particleSlots = input.particleSlots;
+    
     this.shader = typeof input.shader == "undefined" ? "testShader" : input.shader;
     this.tex = input.tex;
     this.texObj = input.texObj;
@@ -16,9 +19,9 @@ Plane.prototype.constructor = Plane;
 
 Plane.prototype.init = function(gl) {
     Object3d.prototype.init.call(this, gl);
-    var width = 4,
-            height = width,            
-            slots = 1;
+    var width = this.particleWidth,
+            height = this.particleHeight,            
+            slots = 2;
     this.particleCount = width * height;
     
     if (this.tex) {
@@ -32,21 +35,23 @@ Plane.prototype.init = function(gl) {
                 UVCoords[j * width * slots * 2 + i + 1] = j / height;
             }
         }
-        var x = 1/1920,
-            y = 1/961;
+        var x = this.gl.viewportWidth,
+            y = this.gl.viewportHeight;
         
         var textureData = new Float32Array(this.particleCount * slots * 4);
-
+        var pointSize = 1;
         for (var i = 0; i < this.particleCount * slots * 4; i += 4) {
             if ((i % (4 * slots)) == 0) {//pos
-                textureData[i] = x * (500 + i/8) ;//Math.random();
-                textureData[i + 1] = y * (500);//Math.random();
+                  //korygowanie:     rozdzielczosci      wielkosci punktu;       pozycja kolejnego pixela    
+                textureData[i] = (( (1-(x%2))/2) -      (1-(pointSize%2))/2 +   ((i/(4*slots))%width)*pointSize +  pointSize/2 -  ~~(width*pointSize/2) )* (1/(x/2));//Math.random() * 2 - 1;
+                textureData[i + 1]=((-(1-(y%2))/2) -    (1-(pointSize%2))/2 - ~~((i/(4*slots))/width)*pointSize -  pointSize/2 +  ~~(height*pointSize/2))* (1/(y/2));//Math.random() * 2 - 1;
                 textureData[i + 2] = 0;
-                textureData[i + 3] = 1;
+                textureData[i + 3] = 1.0;
             }
             else {
-                textureData[i] = Math.random();
-                textureData[i + 1] = Math.random();
+                var modf = 0.0;
+                textureData[i] = modf * (Math.random() - 0.5);
+                textureData[i + 1] = modf * (Math.random() - 0.5);
                 textureData[i + 2] = 0;
                 textureData[i + 3] = 1;
             }
@@ -85,8 +90,8 @@ Plane.prototype.draw = function(gl, shader) {
     if (!this.tex) {
         gl.drawArrays(gl.POINTS, 0, this.particleCount);
         
-        var temp = this.textures[0];
-        this.textures[0] = this.texObj.textures[0];
+        var temp = this.textures[1];
+        this.textures[1] = this.texObj.textures[0];
         this.texObj.textures[0] = temp;
     }
     else{
