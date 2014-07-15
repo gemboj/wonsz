@@ -22,8 +22,14 @@ ArkanoidBall.prototype.update = function(gl, elapsed, scene) {
     var collisionObject = this.collision.checkBoundingVolumeCollision(this.model.boundingVolume);
     if (collisionObject) {
         if (collisionObject.special == "AAPlane") {
+            if(collisionObject.side == 'bottom'){                
+                scene.return = true;
+            }
+            
             this.velX *= collisionObject.vector[0] != 0 ? -1 : 1;
             this.velY *= collisionObject.vector[1] != 0 ? -1 : 1;
+            
+            
 
         }
         else {

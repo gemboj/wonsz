@@ -121,22 +121,24 @@ Scene.prototype.getPointLightMaxRange = function(lightArray) {
 };
 
 Scene.prototype.update = function(gl, elapsed) {
-    for (var i in this.preRenderScenes) {
-        this.preRenderScenes[i].scene.update(gl, elapsed);
-    }
-
-    for (var shaderType in this.objects) {
-        for (var i = 0; i < this.objects[shaderType].length; i++) {
-            this.objects[shaderType][i].update(gl, elapsed, this);
+    if(this.return == false){
+        for (var i in this.preRenderScenes) {
+            this.preRenderScenes[i].scene.update(gl, elapsed);
         }
+
+        for (var shaderType in this.objects) {
+            for (var i = 0; i < this.objects[shaderType].length; i++) {
+                this.objects[shaderType][i].update(gl, elapsed, this);
+            }
+        }
+        for (var i = 0; i < this.cameras.length; i++) {
+            this.cameras[i].update(elapsed);
+        }
+        for (var i = 0; i < this.pointLight.length; i++) {
+            this.pointLight[i].update();
+        }
+        this.time += elapsed;
     }
-    for (var i = 0; i < this.cameras.length; i++) {
-        this.cameras[i].update(elapsed);
-    }
-    for (var i = 0; i < this.pointLight.length; i++) {
-        this.pointLight[i].update();
-    }
-    this.time += elapsed;
 };
 
 Scene.prototype.setupPlayer = function(i, object, light) {

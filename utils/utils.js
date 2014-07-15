@@ -35,8 +35,8 @@ window.requestAnimFrame = (function() {
 
 function getCanvas() {
     var canvas = document.getElementById("canvas");    
-    canvas.width = document.body.clientWidth;
-    canvas.height = document.body.clientHeight;
+    canvas.width = 1024;//document.body.clientWidth;
+    canvas.height = 512;//document.body.clientHeight;
     return canvas;
 }
 

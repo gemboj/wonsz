@@ -4,13 +4,22 @@ function webGLStart() {
     inputHandler = new InputHandler(canvas);
     var gl = initGl(canvas);
 
-    var sscene = arkanoid(gl);
+    var scene = arkanoid(gl);
     //var scene = test(gl, sscene);
     var renderer = new GameRenderer(gl);
-    var scene = particleTest(gl, sscene);
+    var scene2 = particleTest(gl, scene);
 
 
     startGameLoop(gl, renderer, scene);
+    
+    function wait() {
+        if (scene.return == false) {
+            setTimeout(wait, 100);
+        } else {
+            startGameLoop(gl, renderer, scene2);
+        }
+    }
+    wait();
 }
 
 function test(gl, testScene) {
@@ -30,14 +39,14 @@ function test(gl, testScene) {
 function particleTest(gl, arkanoid) {
 
 
-    var frameBW = 1024,
-        frameBH = 512,
+    var frameBW = 32,
+        frameBH = 16,
         slots = 2;
 
     var plane = new Model({geometry: "Plane", model: "plane"});
     var plane2 = new Model({geometry: "Plane", model: "plane"});
-    var cos = new Plane({position: [0, 0, 0], gl: gl, model: plane2, shader: "particleTexturePShader", tex: true, particleWidth: frameBW, particleHeight: frameBH, particleSlots: slots});
-    var cos2 = new Plane({position: [0, 0, 0], gl: gl, model: plane, shader: "particleTextureRShader", texObj: cos, particleWidth: frameBW, particleHeight: frameBH, particleSlots: slots});
+    var cos = new ParticleTexture({position: [0, 0, 0], gl: gl, model: plane2, shader: "particleTexturePShader", type: "physics", particleWidth: frameBW, particleHeight: frameBH, particleSlots: slots});
+    var cos2 = new ParticleTexture({position: [0, 0, 0], gl: gl, model: plane, shader: "particleTextureRShader", type: "renderer", texObj: cos, particleWidth: frameBW, particleHeight: frameBH, particleSlots: slots});
     //
     //cos2.addTexture(gl, null, frameBW * slots, frameBH);
     cos2.textures.push({});
@@ -89,10 +98,10 @@ function cube(gl, testScene) {
 function arkanoid(gl) {
     var collision = new Collision({sceneSize: [16, 10, 2], gridSize: [5, 3, 1]});
 
-    collision.insertObject({special: "AAPlane", vector: [-1, 0, 0], point: [5, 0, 0]});
-    collision.insertObject({special: "AAPlane", vector: [1, 0, 0], point: [-5, 0, 0]});
-    collision.insertObject({special: "AAPlane", vector: [0, -1, 0], point: [0, 4, 0]});
-    collision.insertObject({special: "AAPlane", vector: [0, 1, 0], point: [0, -3, 0]});
+    collision.insertObject({special: "AAPlane", vector: [-1, 0, 0], point: [5, 0, 0], side: 'right'});
+    collision.insertObject({special: "AAPlane", vector: [1, 0, 0], point: [-5, 0, 0], side: 'left'});
+    collision.insertObject({special: "AAPlane", vector: [0, -1, 0], point: [0, 4, 0], side: 'top'});
+    collision.insertObject({special: "AAPlane", vector: [0, 1, 0], point: [0, -3, 0], side: 'bottom'});
 
     var scene = new Scene();
     var cube = new Model({geometry: "Cube", model: "Cube"});
