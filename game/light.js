@@ -2,7 +2,7 @@
  * @argument {input} {} location, color, minRange, maxRange
  * @argument {optional input} {} relative
  */
-function PointLightStatic(input) {
+WONSZ.PointLightStatic = function(input) {
     this.location = input.location;
     this.color = input.color;
     this.minRange = input.minRange;
@@ -10,7 +10,7 @@ function PointLightStatic(input) {
     this.relative = typeof input.relative == 'undefined' ? true : input.relative;
 }
 
-PointLightStatic.prototype.update = function() {
+WONSZ.PointLightStatic.prototype.update = function() {
 
 };
 
@@ -18,7 +18,7 @@ PointLightStatic.prototype.update = function() {
  * @argument {input} {} object, minRange, maxRange
  * @argument {optional input} {} color
  */
-function PointLightFollow(input) {
+WONSZ.PointLightFollow = function(input) {
     this.object = input.object;
     this.location;
 
@@ -30,7 +30,7 @@ function PointLightFollow(input) {
     this.update();
 }
 
-PointLightFollow.prototype.update = function() {
+WONSZ.PointLightFollow.prototype.update = function() {
     var tempMatrix = this.object.getPositionMatrix();
     this.location = [tempMatrix[12], tempMatrix[13], tempMatrix[14]];
 };
