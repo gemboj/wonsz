@@ -2,7 +2,7 @@
  * @argument {input} {} gl, 
  * @argument {optional input} {} viewAngle, minViewDist, maxViewDist
  */
-function Camera(input) {
+WONSZ.Camera = function(input) {
     this.cameraMatrix = mat4.create();
     mat4.identity(this.cameraMatrix);
     this.gl = input.gl;
@@ -14,88 +14,89 @@ function Camera(input) {
     this.maxViewDist = typeof input.maxViewDist == "undefined" ? 40 : input.maxViewDist;
 }
 
-Camera.prototype.getPositionVec = function(){
-    var temp = [this.cameraMatrix[12], this.cameraMatrix[13], this.cameraMatrix[14]];
-    return temp;
+WONSZ.Camera.prototype = {
+    getPositionVec: function(){
+        var temp = [this.cameraMatrix[12], this.cameraMatrix[13], this.cameraMatrix[14]];
+        return temp;
+    },
+
+    getCameraMatrix: function() {
+        var inverseCamera = mat4.create();
+        mat4.inverse(this.cameraMatrix, inverseCamera);
+        return inverseCamera;
+    },
+
+    setCameraMatrix: function(matrix) {
+        this.cameraMatrix = matrix;
+    },
+
+    rotateCameraMatrixX: function(angle){
+        mat4.rotateX(this.cameraMatrix, angle);
+    },
+    rotateCameraMatrixY: function(angle){
+        mat4.rotateY(this.cameraMatrix, angle);
+    },
+    rotateCameraMatrixZ: function(angle){
+        mat4.rotateZ(this.cameraMatrix, angle);
+    },
+
+    setPerspectiveMatrix: function(matrix) {
+        this.perspectiveMatrix = matrix;
+    },
+
+    getPerspectiveMatrix: function() {
+        return this.perspectiveMatrix;
+    },
+
+    adjustView: function(i, maxi, width, height) {
+        if (maxi === 1) {
+            this.setViewPort({x1: 0, y1: 0, x2: width, y2: height});
+        }
+        else if (maxi === 2) {
+            this.setViewPort({x1: i * width / 2, y1: 0, x2: width / 2, y2: height});
+        }
+        else if (maxi === 3) {
+            this.setViewPort({x1: i * width / 3, y1: 0, x2: width / 3, y2: height});
+        }
+        else if (maxi === 4) {
+            this.setViewPort({x1: (i % 2) * width / 2, y1: ((i < 2) ? 0 : 1) * height / 2, x2: width / 2, y2: height / 2});
+        }
+
+        var pMatrix = mat4.create();
+        mat4.identity(pMatrix);
+        mat4.perspective(this.viewAngle, this.viewPort.x2 / this.viewPort.y2, this.minViewDist, this.maxViewDist, pMatrix);
+        this.setPerspectiveMatrix(pMatrix);
+    },
+
+    setViewPort: function(viewPort) {
+        this.viewPort = viewPort;
+    },
+
+    getViewPort: function() {
+        return this.viewPort;
+    },
+
+    update: function() {
+
+    }
 }
-
-Camera.prototype.getCameraMatrix = function() {
-    var inverseCamera = mat4.create();
-    mat4.inverse(this.cameraMatrix, inverseCamera);
-    return inverseCamera;
-};
-
-Camera.prototype.setCameraMatrix = function(matrix) {
-    this.cameraMatrix = matrix;
-};
-
-Camera.prototype.rotateCameraMatrixX = function(angle){
-    mat4.rotateX(this.cameraMatrix, angle);
-};
-Camera.prototype.rotateCameraMatrixY = function(angle){
-    mat4.rotateY(this.cameraMatrix, angle);
-};
-Camera.prototype.rotateCameraMatrixZ = function(angle){
-    mat4.rotateZ(this.cameraMatrix, angle);
-};
-
-Camera.prototype.setPerspectiveMatrix = function(matrix) {
-    this.perspectiveMatrix = matrix;
-};
-
-Camera.prototype.getPerspectiveMatrix = function() {
-    return this.perspectiveMatrix;
-};
-
-Camera.prototype.adjustView = function(i, maxi, width, height) {
-    if (maxi === 1) {
-        this.setViewPort({x1: 0, y1: 0, x2: width, y2: height});
-    }
-    else if (maxi === 2) {
-        this.setViewPort({x1: i * width / 2, y1: 0, x2: width / 2, y2: height});
-    }
-    else if (maxi === 3) {
-        this.setViewPort({x1: i * width / 3, y1: 0, x2: width / 3, y2: height});
-    }
-    else if (maxi === 4) {
-        this.setViewPort({x1: (i % 2) * width / 2, y1: ((i < 2) ? 0 : 1) * height / 2, x2: width / 2, y2: height / 2});
-    }
-    
-    var pMatrix = mat4.create();
-    mat4.identity(pMatrix);
-    mat4.perspective(this.viewAngle, this.viewPort.x2 / this.viewPort.y2, this.minViewDist, this.maxViewDist, pMatrix);
-    this.setPerspectiveMatrix(pMatrix);
-};
-
-Camera.prototype.setViewPort = function(viewPort) {
-    this.viewPort = viewPort;
-};
-
-Camera.prototype.getViewPort = function() {
-    return this.viewPort;
-};
-
-Camera.prototype.update = function() {
-
-};
-
 /**
  * @argument {input} {} position
  * @argument {optional input} {} movement
  */
-function CameraBasic(input) {
-    Camera.call(this, input);
+WONSZ.CameraBasic = function(input) {
+    WONSZ.Camera.call(this, input);
 
     this.rotateRate = 0.1;
     this.moveRate = typeof input.moveRate == "undefined" ? false : input.moveRate;
     this.movement = typeof input.movement == "undefined" ? false : input.movement;
     mat4.translate(this.cameraMatrix, input.position);
 }
-CameraBasic.prototype = Object.create(Camera.prototype);
-CameraBasic.prototype.constructor = CameraBasic;
+WONSZ.CameraBasic.prototype = Object.create(WONSZ.Camera.prototype);
+WONSZ.CameraBasic.prototype.constructor = WONSZ.CameraBasic;
 
-CameraBasic.prototype.update = function(elapsed) {
-    Camera.prototype.update.call(this);
+WONSZ.CameraBasic.prototype.update = function(elapsed) {
+    WONSZ.Camera.prototype.update.call(this);
 
     if (this.movement) {
         if (inputHandler.keyboard.pressedKeys[73]) {
@@ -134,7 +135,7 @@ CameraBasic.prototype.update = function(elapsed) {
  * @param {object} input Obligatory: object,
  *                       Optional: 
  */
-function CameraFollow(input) {
+WONSZ.CameraFollow = function(input) {
     Camera.call(this, input);
 
     this.object = input.object;
@@ -143,11 +144,11 @@ function CameraFollow(input) {
     mat4.translate(this.cameraMatrix, [0.0, 0.0, this.distance]);
 }
 
-CameraFollow.prototype = Object.create(Camera.prototype);
-CameraFollow.prototype.constructor = CameraFollow;
+WONSZ.CameraFollow.prototype = Object.create(WONSZ.Camera.prototype);
+WONSZ.CameraFollow.prototype.constructor = WONSZ.CameraFollow;
 
-CameraFollow.prototype.update = function(elapsed) {
-    Camera.prototype.update.call(this);
+WONSZ.CameraFollow.prototype.update = function(elapsed) {
+    WONSZ.Camera.prototype.update.call(this);
 
     this.cameraMatrix = this.object.getPositionMatrix();
     mat4.translate(this.cameraMatrix, [0.0, 0.0, this.distance]);

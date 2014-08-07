@@ -1,4 +1,4 @@
-function Scene() {
+WONSZ.Scene = function() {
     this.objects = {};
 
     this.cameras = [];
@@ -13,7 +13,7 @@ function Scene() {
     this.preRenderScenes = [];
 }
 
-Scene.prototype.addObject = function(object) {
+WONSZ.Scene.prototype.addObject = function(object) {
     if (object.preRenderScenes) {
         this.preRenderScenes = this.preRenderScenes.concat(object.preRenderScenes);
     }
@@ -29,7 +29,7 @@ Scene.prototype.addObject = function(object) {
     return object;
 };
 
-Scene.prototype.removeObject = function(object) {
+WONSZ.Scene.prototype.removeObject = function(object) {
     for (var i in this.objects) {
         if (i == object.shader) {
             var tab = this.objects[i];
@@ -44,7 +44,7 @@ Scene.prototype.removeObject = function(object) {
     }
 };
 
-Scene.prototype.addCamera = function(cameraObj, viewportWidth, viewportHeight) {
+WONSZ.Scene.prototype.addCamera = function(cameraObj, viewportWidth, viewportHeight) {
     this.cameras.push(cameraObj);
 
     if ((viewportWidth) && (viewportHeight)) {
@@ -62,22 +62,22 @@ Scene.prototype.addCamera = function(cameraObj, viewportWidth, viewportHeight) {
     return cameraObj;
 };
 
-Scene.prototype.addPointLight = function(lightObj) {
+WONSZ.Scene.prototype.addPointLight = function(lightObj) {
     this.pointLight.push(lightObj);
     return lightObj;
 };
 
-Scene.prototype.addSnakeLight = function(lightObj) {
+WONSZ.Scene.prototype.addSnakeLight = function(lightObj) {
     this.snakeLight.push(lightObj);
     return lightObj;
 };
 
-Scene.prototype.addAmbientLight = function(color) {
+WONSZ.Scene.prototype.addAmbientLight = function(color) {
     this.ambientLight.color = color;
 
 };
 
-Scene.prototype.getPointLightLocation = function(cameraMatrix, lightArray) {
+WONSZ.Scene.prototype.getPointLightLocation = function(cameraMatrix, lightArray) {
     var tempTab = [];
     var tempVec3 = vec3.create();
 
@@ -96,7 +96,7 @@ Scene.prototype.getPointLightLocation = function(cameraMatrix, lightArray) {
     return tempTab;
 };
 
-Scene.prototype.getPointLightColor = function(lightArray) {
+WONSZ.Scene.prototype.getPointLightColor = function(lightArray) {
     var tempTab = [];
     for (var i = 0; i < lightArray.length; i++) {
         tempTab.push(lightArray[i].color[0], lightArray[i].color[1], lightArray[i].color[2]);
@@ -104,7 +104,7 @@ Scene.prototype.getPointLightColor = function(lightArray) {
     return tempTab;
 };
 
-Scene.prototype.getPointLightMinRange = function(lightArray) {
+WONSZ.Scene.prototype.getPointLightMinRange = function(lightArray) {
     var tempTab = [];
     for (var i = 0; i < lightArray.length; i++) {
         tempTab.push(lightArray[i].minRange);
@@ -112,7 +112,7 @@ Scene.prototype.getPointLightMinRange = function(lightArray) {
     return tempTab;
 };
 
-Scene.prototype.getPointLightMaxRange = function(lightArray) {
+WONSZ.Scene.prototype.getPointLightMaxRange = function(lightArray) {
     var tempTab = [];
     for (var i = 0; i < lightArray.length; i++) {
         tempTab.push(lightArray[i].maxRange);
@@ -120,7 +120,7 @@ Scene.prototype.getPointLightMaxRange = function(lightArray) {
     return tempTab;
 };
 
-Scene.prototype.update = function(gl, elapsed) {
+WONSZ.Scene.prototype.update = function(gl, elapsed) {
     if(this.return == false){
         for (var i in this.preRenderScenes) {
             this.preRenderScenes[i].scene.update(gl, elapsed);
@@ -141,7 +141,7 @@ Scene.prototype.update = function(gl, elapsed) {
     }
 };
 
-Scene.prototype.setupPlayer = function(i, object, light) {
+WONSZ.Scene.prototype.setupPlayer = function(i, object, light) {
     //this.camera = camera;
     //var object = camera.object;
     //this.light = light;
@@ -175,7 +175,7 @@ Scene.prototype.setupPlayer = function(i, object, light) {
  * @param {float <-1, 1>} Optional frustum (position in frustum - from -1(near) to 1(far))
  * @returns {Array} point Point in 3d [x, y, z]
  */
-Scene.prototype.point2DTo3D = function(input) {
+WONSZ.Scene.prototype.point2DTo3D = function(input) {
 
 
 
