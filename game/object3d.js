@@ -42,7 +42,7 @@ WONSZ.Object3d.prototype.init = function(gl) {
         }
     }
 
-
+/**/
     for (var i = 0; i < this.model.textures.length; i++) {
         this.textures[i] = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, this.textures[i]);
