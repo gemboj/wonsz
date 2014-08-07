@@ -1,13 +1,11 @@
-WONSZ.Model = function(input) {
+function Model(input) {
     this.vertices = [];
     this.indices = [];
     this.normals = [];
     this.textureCoords = [];
     this.textures = [];
     this.texturesLoaded = [];
-    
     this.boundingVolume;
-    
     this.boundingParticles = [];
     this.boundingParticlesVelocities = [];
     this.boundingParticlesColors = [];
@@ -53,7 +51,7 @@ WONSZ.Model = function(input) {
     this.boundingVolume = new AABB({vertices: this.vertices});
 }
 
-WONSZ.Model.prototype.flat = function(xmlObject, rawTextureCoords, rawVertices, rawNormals, rawIndices, input, model) {
+Model.prototype.flat = function(xmlObject, rawTextureCoords, rawVertices, rawNormals, rawIndices, input, model) {
     var offset = 3;
     var x = xmlObject.querySelector("[id='" + input.geometry + "-mesh-map-0-array']");
     if (x != null) {
@@ -142,7 +140,7 @@ WONSZ.Model.prototype.flat = function(xmlObject, rawTextureCoords, rawVertices, 
     }
 }
 
-WONSZ.Model.prototype.getBoundingParticles = function(a, b, c, aT, bT, cT) {
+Model.prototype.getBoundingParticles = function(a, b, c, aT, bT, cT) {
     var ab = vec3.create(),
         ac = vec3.create(),
         abT = [],
@@ -187,7 +185,7 @@ WONSZ.Model.prototype.getBoundingParticles = function(a, b, c, aT, bT, cT) {
     }
 }
 
-WONSZ.Model.prototype.getModel = function() {
+Model.prototype.getModel = function() {
     var model = {};
     model.vertices = this.vertices.slice();
     model.indices = this.indices.slice();

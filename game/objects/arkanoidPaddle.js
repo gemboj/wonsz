@@ -1,14 +1,14 @@
-WONSZ.ArkanoidPaddle = function(input) {
-    WONSZ.Object3d.call(this, input);
+function ArkanoidPaddle(input) {
+    Object3d.call(this, input);
     this.velX = 0.05;
     this.keys = {left: 37, right: 39, up: 38, down: 40};
 
 }
 
-WONSZ.ArkanoidPaddle.prototype = Object.create(WONSZ.Object3d.prototype);
-WONSZ.ArkanoidPaddle.prototype.constructor = WONSZ.ArkanoidPaddle;
+ArkanoidPaddle.prototype = Object.create(Object3d.prototype);
+ArkanoidPaddle.prototype.constructor = ArkanoidPaddle;
 
-WONSZ.ArkanoidPaddle.prototype.update = function(gl, elapsed, scene) {
+ArkanoidPaddle.prototype.update = function(gl, elapsed, scene) {
     this.handleKeys(elapsed);
     this.computeBoundingVolume();
     this.collision.updateObject(this);
@@ -22,7 +22,7 @@ WONSZ.ArkanoidPaddle.prototype.update = function(gl, elapsed, scene) {
     }
 }
 
-WONSZ.ArkanoidPaddle.prototype.handleKeys = function(elapsed) {
+ArkanoidPaddle.prototype.handleKeys = function(elapsed) {
     if (inputHandler.keyboard.pressedKeys[this.keys.left]) {
        this.translate([-this.velX, 0, 0]);
     }
