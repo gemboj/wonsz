@@ -1,4 +1,4 @@
-function GameRenderer(gl) {
+WONSZ.GameRenderer = function (gl) {
     //this.pMatrix = mat4.create();
     this.oMatrix = mat4.create();
     this.mvMatrix = mat4.create();
@@ -7,6 +7,8 @@ function GameRenderer(gl) {
     this.lastShader = null;
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
+
+    var initShaders = WONSZ.utility.initShaders;
 
     this.basicShaderProgram = initShaders(gl, "basicFShader", "basicVShader",
             ["aVertexPosition", "aVertexNormal"],
@@ -34,36 +36,47 @@ function GameRenderer(gl) {
     //Render
     this.particleTextureRShaderProgram = initShaders(gl, "particleTextureRFShader", "particleTextureRVShader",
             ["aUVCoords"],
-            ["uTexture", "uTexture2", "uWidth", "uHeight"]);
+            ["uTexture", "uTexture2", "uWidth", "uHeight", "uPointSize"]);
 
     //Physics    
     this.particleTexturePShaderProgram = initShaders(gl, "particleTexturePFShader", "particleTexturePVShader",
             ["aVertexPosition"],
             ["uTexture", "uViewPort", "uMouseDown", "uMousePos", "uStop"]);
 
+    this.interfaceShaderProgram = initShaders(gl, "interfaceFShader", "interfaceVShader",
+            ["aVertexPosition", "aTextureCoords"],
+            ["uTexture", "uViewPort", "uWidth", "uHeight", "uMVMatrix"]);
+            
     if (!gl.getExtension('OES_texture_float'))
         alert('Float textures not supported');
 
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
     gl.enable(gl.DEPTH_TEST);
-
-    this.initRenderToTexture(gl);
 }
 
-GameRenderer.prototype.renderToTexture = function(gl, scene, texture) {
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
+WONSZ.GameRenderer.prototype.renderToTexture = function(gl, scene, texture, frameBuffer) {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
 
     this.drawFrame(gl, scene);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 }
 
-GameRenderer.prototype.drawFrame = function(gl, scene) {
+WONSZ.GameRenderer.prototype.drawFrame = function(gl, scene) {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     for (var i in scene.preRenderScenes) {
-        this.renderToTexture(gl, scene.preRenderScenes[i].scene, scene.preRenderScenes[i].object.textures[scene.preRenderScenes[i].textureUnit]);
-        //scene.preRenderScenes[i].object.updateTexture(gl, texture, 0);
+        var preRenderScene = scene.preRenderScenes[i];
+        
+        this.renderToTexture(gl, preRenderScene.scene, preRenderScene.object.textures[preRenderScene.textureUnit], preRenderScene.object.frameBuffers[preRenderScene.frameBufferUnit]);
+        
+        if(typeof preRenderScene.renderingNum != "undefined"){
+            preRenderScene.renderingNum--;
+            if(preRenderScene.renderingNum == 0){
+                var index = scene.preRenderScenes.indexOf(preRenderScene);
+                scene.preRenderScenes.splice(index, 1);
+            }
+        }
     }
 
     for (var j = 0; j < scene.cameras.length; j++) {
@@ -71,7 +84,7 @@ GameRenderer.prototype.drawFrame = function(gl, scene) {
 
         for (var shaderType in scene.objects) {
             if (this.lastShader != shaderType) {
-                getAULocations(gl, this[shaderType + "Program"]);
+                WONSZ.utility.getAULocations(gl, this[shaderType + "Program"]);
             }
             this.lastShader = shaderType;
             this[shaderType](gl, scene, shaderType, camera); //calls method 'shaderType' of this - renderer
@@ -79,7 +92,40 @@ GameRenderer.prototype.drawFrame = function(gl, scene) {
         }
     }
 };
-GameRenderer.prototype.particleTextureRShader = function(gl, scene, shaderType, camera) {
+
+WONSZ.GameRenderer.prototype.interfaceShader = function(gl, scene, shaderType, camera) {
+    gl.enable(gl.BLEND);
+    
+    gl.useProgram(this.interfaceShaderProgram);
+
+    gl.viewport(camera.viewPort.x1, camera.viewPort.y1, camera.viewPort.x2, camera.viewPort.y2);
+
+    for (var i = 0; i < scene.objects[shaderType].length; i++) {
+        var object = scene.objects[shaderType][i];
+
+        gl.activeTexture(gl["TEXTURE0"]);
+        gl.bindTexture(gl.TEXTURE_2D, object.textures[0]);
+        gl.uniform1i(this.interfaceShaderProgram.uniform.uTexture, 0);
+
+        gl.uniform2fv(this.interfaceShaderProgram.uniform.uViewPort, [camera.viewPort.x2, camera.viewPort.y2]);
+        gl.uniform1f(this.interfaceShaderProgram.uniform.uWidth, object.textures[0].width);
+        gl.uniform1f(this.interfaceShaderProgram.uniform.uHeight, object.textures[0].height)
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, object.textureCoordBuffer);
+        gl.vertexAttribPointer(this.interfaceShaderProgram.attribute.aTextureCoords, object.textureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, object.vertexPositionBuffer);
+        gl.vertexAttribPointer(this.interfaceShaderProgram.attribute.aVertexPosition, object.vertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+        gl.uniformMatrix4fv(this.interfaceShaderProgram.uniform.uMVMatrix, false, object.positionMatrix);
+
+        object.draw(gl, this.interfaceShaderProgram);
+    }
+    
+    gl.disable(gl.BLEND);
+};
+
+WONSZ.GameRenderer.prototype.particleTextureRShader = function(gl, scene, shaderType, camera) {
     gl.useProgram(this.particleTextureRShaderProgram);
     gl.viewport(camera.viewPort.x1, camera.viewPort.y1, camera.viewPort.x2, camera.viewPort.y2);
 
@@ -93,7 +139,8 @@ GameRenderer.prototype.particleTextureRShader = function(gl, scene, shaderType, 
         gl.activeTexture(gl.TEXTURE1);
         gl.bindTexture(gl.TEXTURE_2D, object.textures[0]);
         gl.uniform1i(this.particleTextureRShaderProgram.uniform.uTexture2, 1);
-
+        gl.uniform1f(this.particleTextureRShaderProgram.uniform.uPointSize, object.pointSize);
+    
         gl.uniform1i(this.particleTextureRShaderProgram.uniform.uWidth, object.particleWidth);
         gl.uniform1i(this.particleTextureRShaderProgram.uniform.uHeight, object.particleHeight);
         gl.bindBuffer(gl.ARRAY_BUFFER, object.UVCoordsBuffer);
@@ -103,7 +150,7 @@ GameRenderer.prototype.particleTextureRShader = function(gl, scene, shaderType, 
     }
 }
 
-GameRenderer.prototype.particleTexturePShader = function(gl, scene, shaderType, camera) {
+WONSZ.GameRenderer.prototype.particleTexturePShader = function(gl, scene, shaderType, camera) {
     gl.useProgram(this[shaderType + "Program"]);
     gl.viewport(camera.viewPort.x1, camera.viewPort.y1, camera.viewPort.x2, camera.viewPort.y2);
 
@@ -125,7 +172,7 @@ GameRenderer.prototype.particleTexturePShader = function(gl, scene, shaderType, 
     }
 }
 
-GameRenderer.prototype.particleShader = function(gl, scene, shaderType, camera) {
+WONSZ.GameRenderer.prototype.particleShader = function(gl, scene, shaderType, camera) {
     //gl.disable(gl.DEPTH_TEST);
     gl.enable(gl.BLEND);
     gl.viewport(camera.viewPort.x1, camera.viewPort.y1, camera.viewPort.x2, camera.viewPort.y2);
@@ -144,7 +191,7 @@ GameRenderer.prototype.particleShader = function(gl, scene, shaderType, camera) 
     gl.disable(gl.BLEND);
 };
 
-GameRenderer.prototype.testShader = function(gl, scene, shaderType, camera) {
+WONSZ.GameRenderer.prototype.testShader = function(gl, scene, shaderType, camera) {
     gl.useProgram(this.testShaderProgram);
 
     gl.viewport(camera.viewPort.x1, camera.viewPort.y1, camera.viewPort.x2, camera.viewPort.y2);
@@ -174,7 +221,7 @@ GameRenderer.prototype.testShader = function(gl, scene, shaderType, camera) {
     }
 };
 
-GameRenderer.prototype.basicShader = function(gl, scene, shaderType, camera) {
+WONSZ.GameRenderer.prototype.basicShader = function(gl, scene, shaderType, camera) {
     gl.useProgram(this.basicShaderProgram);
     gl.viewport(camera.viewPort.x1, camera.viewPort.y1, camera.viewPort.x2, camera.viewPort.y2);
     var cameraMatrix = camera.getCameraMatrix();
@@ -212,7 +259,7 @@ GameRenderer.prototype.basicShader = function(gl, scene, shaderType, camera) {
     }
 };
 
-GameRenderer.prototype.basicShaderT = function(gl, scene, shaderType, camera) {
+WONSZ.GameRenderer.prototype.basicShaderT = function(gl, scene, shaderType, camera) {
     gl.useProgram(this.basicShaderTProgram);
     //gl.viewport(0, 0, 512, 512);
     gl.viewport(camera.viewPort.x1, camera.viewPort.y1, camera.viewPort.x2, camera.viewPort.y2);
@@ -278,7 +325,7 @@ GameRenderer.prototype.basicShaderT = function(gl, scene, shaderType, camera) {
 };
 
 
-GameRenderer.prototype.snakeShader = function(gl, scene, shaderType, camera) {
+WONSZ.GameRenderer.prototype.snakeShader = function(gl, scene, shaderType, camera) {
 //ADD NORMAL POINT LIGHT FIRST, THEN SNAKE LIGHT    
     gl.useProgram(this.snakeShaderProgram);
     gl.viewport(camera.viewPort.x1, camera.viewPort.y1, camera.viewPort.x2, camera.viewPort.y2);
@@ -341,22 +388,3 @@ GameRenderer.prototype.snakeShader = function(gl, scene, shaderType, camera) {
         gl.disable(gl.BLEND);
     }
 };
-
-GameRenderer.prototype.initRenderToTexture = function(gl) {
-    var width = 512,
-            height = 512;
-
-    this.frameBuffer = gl.createFramebuffer();
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
-    this.frameBuffer.width = width;
-    this.frameBuffer.height = height;
-
-    //this.frameBuffer.depthBuffer = gl.createRenderbuffer();
-    //gl.bindRenderbuffer(gl.RENDERBUFFER, this.frameBuffer.depthBuffer);
-    //gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
-
-    //gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.frameBuffer.depthBuffer);
-
-    //gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-}
