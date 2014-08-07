@@ -2,7 +2,7 @@
  * @argument {input} {} gl, position, numParticles
  * @argument {optional input} {} 
  */
-WONSZ.ParticleEmitter = function(input) {
+function ParticleEmitter(input) {
     this.positionMatrix = input.positionMatrix;
 
     this.shader = "particleShader";
@@ -18,7 +18,7 @@ WONSZ.ParticleEmitter = function(input) {
     this.initBuffers(input.gl);
 }
 
-WONSZ.ParticleEmitter.prototype.draw = function(gl, shader) {
+ParticleEmitter.prototype.draw = function(gl, shader) {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.particlePositionBuffer);
     gl.vertexAttribPointer(shader.attribute.aParticlePosition, this.particlePositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
@@ -39,11 +39,11 @@ WONSZ.ParticleEmitter.prototype.draw = function(gl, shader) {
     gl.drawArrays(gl.POINTS, 0, this.particles.length / 3);
 };
 
-WONSZ.ParticleEmitter.prototype.destructor = function() {
+ParticleEmitter.prototype.destructor = function() {
 
 }
 
-WONSZ.ParticleEmitter.prototype.initBuffers = function(gl) {
+ParticleEmitter.prototype.initBuffers = function(gl) {
     /*for (var i = 0; i < this.num * 3; i += 3) {
      this.particles.push(0, 0, 0);
      var theta = Math.random() * Math.PI * 2;
@@ -73,7 +73,7 @@ WONSZ.ParticleEmitter.prototype.initBuffers = function(gl) {
     this.particleColorsBuffer.numItems = this.colors.length / 2;
 };
 
-WONSZ.ParticleEmitter.prototype.update = function(gl, elapsed, scene) {
+ParticleEmitter.prototype.update = function(gl, elapsed, scene) {
 
     this.currentTime += elapsed;
     if (this.currentTime >= this.lifeTime) {
@@ -81,10 +81,10 @@ WONSZ.ParticleEmitter.prototype.update = function(gl, elapsed, scene) {
     }
 };
 
-WONSZ.ParticleEmitter.prototype.setPosition = function(position) {
+ParticleEmitter.prototype.setPosition = function(position) {
     mat4.translate(this.positionMatrix, position);
 };
 
-WONSZ.ParticleEmitter.prototype.shift = function(shift) {
+ParticleEmitter.prototype.shift = function(shift) {
     mat4.translate(this.positionMatrix, shift);
 };

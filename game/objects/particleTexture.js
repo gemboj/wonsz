@@ -1,23 +1,20 @@
 
-WONSZ.ParticleTexture = function(input) {
-    
-    
+function ParticleTexture(input) {
     this.gl = input.gl;
     this.particleWidth = input.particleWidth;
     this.particleHeight = input.particleHeight;
     this.particleSlots = input.particleSlots;
-    this.pointSize = input.pointSize;
+    
     this.shader = typeof input.shader == "undefined" ? "testShader" : input.shader;
     this.type = input.type;//physics / renderer
     this.texObj = input.texObj; //source of texture for phycisc renderer
-    WONSZ.Object3d.call(this, input);
-    
+    Object3d.call(this, input);
 }
-WONSZ.ParticleTexture.prototype = Object.create(WONSZ.Object3d.prototype);
-WONSZ.ParticleTexture.prototype.constructor = WONSZ.ParticleTexture;
+ParticleTexture.prototype = Object.create(Object3d.prototype);
+ParticleTexture.prototype.constructor = ParticleTexture;
 
-WONSZ.ParticleTexture.prototype.init = function(gl) {
-    WONSZ.Object3d.prototype.init.call(this, gl);
+ParticleTexture.prototype.init = function(gl) {
+    Object3d.prototype.init.call(this, gl);
     var width = this.particleWidth,
             height = this.particleHeight,            
             slots = 2;
@@ -38,7 +35,7 @@ WONSZ.ParticleTexture.prototype.init = function(gl) {
             y = this.gl.viewportHeight;
         
         var textureData = new Float32Array(this.particleCount * slots * 4);
-        var pointSize = this.pointSize;
+        var pointSize = 32;
         for (var i = 0; i < this.particleCount * slots * 4; i += 4) {
             if ((i % (4 * slots)) == 0) {//pos
                   //korygowanie:     rozdzielczosci      wielkosci punktu;       pozycja kolejnego pixela    
@@ -48,7 +45,7 @@ WONSZ.ParticleTexture.prototype.init = function(gl) {
                 textureData[i + 3] = 1.0;
             }
             else {
-                var modf = 0.001;
+                var modf = 0.0;
                 textureData[i] = modf * (Math.random() - 0.5);
                 textureData[i + 1] = modf * (Math.random() - 0.5);
                 textureData[i + 2] = 0;
@@ -83,7 +80,7 @@ WONSZ.ParticleTexture.prototype.init = function(gl) {
     this.UVCoordsBuffer.numItems = UVCoords.length / 2;
 }
 
-WONSZ.ParticleTexture.prototype.draw = function(gl, shader) {
+ParticleTexture.prototype.draw = function(gl, shader) {
     
 
     if (this.type == "renderer") {
