@@ -100,26 +100,26 @@ WONSZ.CameraBasic.prototype.update = function(elapsed) {
 
     if (this.movement) {
         if (inputHandler.keyboard.pressedKeys[73]) {
-            mat4.rotate(this.cameraMatrix, -degToRad(this.rotateRate * elapsed), [1, 0, 0]);
+            mat4.rotate(this.cameraMatrix, -WONSZ.utility.degToRad(this.rotateRate * elapsed), [1, 0, 0]);
         }
         else if (inputHandler.keyboard.pressedKeys[75]) {
-            mat4.rotate(this.cameraMatrix, degToRad(this.rotateRate * elapsed), [1, 0, 0]);
+            mat4.rotate(this.cameraMatrix, WONSZ.utility.degToRad(this.rotateRate * elapsed), [1, 0, 0]);
         }
 
         if (inputHandler.keyboard.pressedKeys[85]) {
-            mat4.rotate(this.cameraMatrix, degToRad(this.rotateRate * elapsed), [0, 1, 0]);
+            mat4.rotate(this.cameraMatrix, WONSZ.utility.degToRad(this.rotateRate * elapsed), [0, 1, 0]);
 
         }
         else if (inputHandler.keyboard.pressedKeys[79]) {
-            mat4.rotate(this.cameraMatrix, -degToRad(this.rotateRate * elapsed), [0, 1, 0]);
+            mat4.rotate(this.cameraMatrix, -WONSZ.utility.degToRad(this.rotateRate * elapsed), [0, 1, 0]);
         }
 
 
         if (inputHandler.keyboard.pressedKeys[74]) {
-            mat4.rotate(this.cameraMatrix, degToRad(this.rotateRate * elapsed), [0, 0, 1]);
+            mat4.rotate(this.cameraMatrix, WONSZ.utility.degToRad(this.rotateRate * elapsed), [0, 0, 1]);
         }
         else if (inputHandler.keyboard.pressedKeys[76]) {
-            mat4.rotate(this.cameraMatrix, -degToRad(this.rotateRate * elapsed), [0, 0, 1]);
+            mat4.rotate(this.cameraMatrix, -WONSZ.utility.degToRad(this.rotateRate * elapsed), [0, 0, 1]);
         }
 
         if (inputHandler.keyboard.pressedKeys[72]) {

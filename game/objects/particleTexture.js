@@ -9,7 +9,7 @@ WONSZ.ParticleTexture = function(input) {
     this.pointSize = input.pointSize;
     this.shader = typeof input.shader == "undefined" ? "testShader" : input.shader;
     this.type = input.type;//physics / renderer
-    this.texObj = input.texObj; //source of texture for phycisc renderer
+    this.texObj = input.texObj; //source of texture for physics renderer
     WONSZ.Object3d.call(this, input);
     
 }
@@ -24,7 +24,7 @@ WONSZ.ParticleTexture.prototype.init = function(gl) {
     this.particleCount = width * height;
     
     if (this.type == "physics") {
-
+        this.addTexture(new WONSZ.Texture({gl: gl, src: null, width: width * slots, height: height, type: "FLOAT"}), 0);
 
         var UVCoords = new Float32Array(this.particleCount * slots * 2);
 
@@ -57,14 +57,14 @@ WONSZ.ParticleTexture.prototype.init = function(gl) {
 
         }
         //gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, this.textures[0]);
+       /*gl.bindTexture(gl.TEXTURE_2D, this.textures[0]);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width * slots, height, 0, gl.RGBA, gl.FLOAT, textureData);
-        gl.bindTexture(gl.TEXTURE_2D, null);
-
+        gl.bindTexture(gl.TEXTURE_2D, null);*/
+        this.textures[0].fillTexture(textureData);
 
     }
     var UVCoords = new Float32Array(this.particleCount * slots);
@@ -93,7 +93,7 @@ WONSZ.ParticleTexture.prototype.draw = function(gl, shader) {
         this.textures[1] = this.texObj.textures[0];
         this.texObj.textures[0] = temp;
     }
-    else{//renderer
+    else{//physics
         gl.drawElements(gl.TRIANGLES, this.vertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
     }
 };

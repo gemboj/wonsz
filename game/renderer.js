@@ -30,8 +30,8 @@ WONSZ.GameRenderer = function (gl) {
             ["uPMatrix", "uMVMatrix", "uCurrentTime", "uMaxRange", "uLifeTime"]);
 
     this.testShaderProgram = initShaders(gl, "testFShader", "testVShader",
-            ["aVertexPosition", "aTextureCoords"],
-            ["uViewPort", "uTime", "uTexture"]);
+            ["aVertexPosition"],
+            ["uViewPort", "uTime"]);
 
     //Render
     this.particleTextureRShaderProgram = initShaders(gl, "particleTextureRFShader", "particleTextureRVShader",
@@ -47,6 +47,10 @@ WONSZ.GameRenderer = function (gl) {
             ["aVertexPosition", "aTextureCoords"],
             ["uTexture", "uViewPort", "uWidth", "uHeight", "uMVMatrix"]);
             
+    this.debugShaderProgram = initShaders(gl, "debugFShader", "debugVShader",
+            ["aVertexPosition"],
+            ["uPMatrix", "uCameraMatrix", "uColor"]);
+            
     if (!gl.getExtension('OES_texture_float'))
         alert('Float textures not supported');
 
@@ -56,7 +60,7 @@ WONSZ.GameRenderer = function (gl) {
 
 WONSZ.GameRenderer.prototype.renderToTexture = function(gl, scene, texture, frameBuffer) {
     gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture.getTexture(), 0);
 
     this.drawFrame(gl, scene);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -104,12 +108,12 @@ WONSZ.GameRenderer.prototype.interfaceShader = function(gl, scene, shaderType, c
         var object = scene.objects[shaderType][i];
 
         gl.activeTexture(gl["TEXTURE0"]);
-        gl.bindTexture(gl.TEXTURE_2D, object.textures[0]);
+        gl.bindTexture(gl.TEXTURE_2D, object.textures[0].getTexture());
         gl.uniform1i(this.interfaceShaderProgram.uniform.uTexture, 0);
 
         gl.uniform2fv(this.interfaceShaderProgram.uniform.uViewPort, [camera.viewPort.x2, camera.viewPort.y2]);
-        gl.uniform1f(this.interfaceShaderProgram.uniform.uWidth, object.textures[0].width);
-        gl.uniform1f(this.interfaceShaderProgram.uniform.uHeight, object.textures[0].height)
+        gl.uniform1f(this.interfaceShaderProgram.uniform.uWidth, object.textures[0].getWidth());
+        gl.uniform1f(this.interfaceShaderProgram.uniform.uHeight, object.textures[0].getHeight());
 
         gl.bindBuffer(gl.ARRAY_BUFFER, object.textureCoordBuffer);
         gl.vertexAttribPointer(this.interfaceShaderProgram.attribute.aTextureCoords, object.textureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
@@ -125,6 +129,26 @@ WONSZ.GameRenderer.prototype.interfaceShader = function(gl, scene, shaderType, c
     gl.disable(gl.BLEND);
 };
 
+WONSZ.GameRenderer.prototype.debugShader = function(gl, scene, shaderType, camera) {
+    gl.useProgram(this.debugShaderProgram);
+    //gl.enable(gl.DEPTH_TEST);
+    gl.viewport(camera.viewPort.x1, camera.viewPort.y1, camera.viewPort.x2, camera.viewPort.y2);
+
+    var cameraMatrix = camera.getCameraMatrix();
+    gl.uniformMatrix4fv(this.debugShaderProgram.uniform.uCameraMatrix, false, cameraMatrix);
+    
+
+    gl.uniformMatrix4fv(this.debugShaderProgram.uniform.uPMatrix, false, camera.getPerspectiveMatrix());
+
+
+    for (var i = 0; i < scene.objects[shaderType].length; i++) {
+        var object = scene.objects[shaderType][i];
+        
+        object.draw(gl, this.debugShaderProgram);
+    }
+    //gl.disable(gl.DEPTH_TEST);
+}
+
 WONSZ.GameRenderer.prototype.particleTextureRShader = function(gl, scene, shaderType, camera) {
     gl.useProgram(this.particleTextureRShaderProgram);
     gl.viewport(camera.viewPort.x1, camera.viewPort.y1, camera.viewPort.x2, camera.viewPort.y2);
@@ -133,11 +157,11 @@ WONSZ.GameRenderer.prototype.particleTextureRShader = function(gl, scene, shader
         var object = scene.objects[shaderType][i];
 
         gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, object.textures[1]);
+        gl.bindTexture(gl.TEXTURE_2D, object.textures[1].getTexture());
         gl.uniform1i(this.particleTextureRShaderProgram.uniform.uTexture, 0);
 
         gl.activeTexture(gl.TEXTURE1);
-        gl.bindTexture(gl.TEXTURE_2D, object.textures[0]);
+        gl.bindTexture(gl.TEXTURE_2D, object.textures[0].getTexture());
         gl.uniform1i(this.particleTextureRShaderProgram.uniform.uTexture2, 1);
         gl.uniform1f(this.particleTextureRShaderProgram.uniform.uPointSize, object.pointSize);
     
@@ -158,7 +182,7 @@ WONSZ.GameRenderer.prototype.particleTexturePShader = function(gl, scene, shader
         var object = scene.objects[shaderType][i];
 
         gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, object.textures[0]);
+        gl.bindTexture(gl.TEXTURE_2D, object.textures[0].getTexture());
         gl.uniform1i(this.particleTexturePShaderProgram.uniform.uTexture, 0);
 
         gl.uniform2fv(this.particleTexturePShaderProgram.uniform.uViewPort, [camera.viewPort.x2, camera.viewPort.y2]);
@@ -200,19 +224,8 @@ WONSZ.GameRenderer.prototype.testShader = function(gl, scene, shaderType, camera
     for (var i = 0; i < scene.objects[shaderType].length; i++) {
         var object = scene.objects[shaderType][i];
 
-        gl.activeTexture(gl["TEXTURE0"]);
-        gl.bindTexture(gl.TEXTURE_2D, object.textures[0]);
-
-        gl.uniform1i(this.testShaderProgram.uniform.uTexture, 0);
-
         gl.uniform2fv(this.testShaderProgram.uniform.uViewPort, [camera.viewPort.x2, camera.viewPort.y2]);
         gl.uniform1f(this.testShaderProgram.uniform.uTime, scene.time);
-
-
-        //gl.uniform1i(this.testShaderProgram.uniform.uTexture, 0);
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, object.textureCoordBuffer);
-        gl.vertexAttribPointer(this.testShaderProgram.attribute.aTextureCoords, object.textureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, object.vertexPositionBuffer);
         gl.vertexAttribPointer(this.testShaderProgram.attribute.aVertexPosition, object.vertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
@@ -297,7 +310,7 @@ WONSZ.GameRenderer.prototype.basicShaderT = function(gl, scene, shaderType, came
 
         for (var j = 0; j < object.textures.length; j++) {
             gl.activeTexture(gl["TEXTURE" + j]);
-            gl.bindTexture(gl.TEXTURE_2D, object.textures[j]);
+            gl.bindTexture(gl.TEXTURE_2D, object.textures[j].getTexture());
             textureUnits.push(j);
         }
         gl.uniform1iv(this.basicShaderTProgram.uniform.uTexture, textureUnits);

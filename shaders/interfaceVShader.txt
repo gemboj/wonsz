@@ -12,7 +12,7 @@ uniform mat4 uMVMatrix;
 varying vec2 vTextureCoords;
 void main(void) {
    vTextureCoords = aTextureCoords;
-   mat4 MVMP = uMVMatrix;
+   mat4 MVMP = uMVMatrix;//model view matrix prim
    
    float width = uWidth * length(uMVMatrix[0]);
    float height = uHeight * length(uMVMatrix[1]);
@@ -20,5 +20,5 @@ void main(void) {
    MVMP[3] = vec4( MVMP[3][0] * (1.0 - width/uViewPort.x)  * (uViewPort.x/uWidth)  , MVMP[3][1] * (1.0 - height/uViewPort.y) * (uViewPort.y/ uHeight), MVMP[3][2], MVMP[3][3]);
    vec4 centerPos = MVMP * vec4(aVertexPosition, 1.0);
    
-   gl_Position = vec4(centerPos.x * uWidth/(uViewPort.x), centerPos.y * uHeight/(uViewPort.y), centerPos.z, centerPos.w);
+   gl_Position = vec4(centerPos.x * uWidth/(uViewPort.x), centerPos.y * uHeight/(uViewPort.y), 0.0, centerPos.w);
 }

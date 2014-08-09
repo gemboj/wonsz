@@ -1,28 +1,28 @@
 WONSZ.Object3d = function(input) {
     this.positionMatrix = mat4.create();
     mat4.identity(this.positionMatrix);
-    this.color = typeof input.color == "undefined" ? [0, 0, 0, 0] : input.color;
-    this.shader = typeof input.shader == "undefined" ? "basicShaderT" : input.shader;
-    this.model = input.model.getModel();
+    this.shader = input.shader || "basicShaderT";
+    
+    this.model = input.model;
+    this._boundingVolume = input.boundingVolume;
+    
     this.shininess = typeof input.shininess == "undefined" ? 0 : input.shininess;
 
 
     this.textures = [];//.image = source
-    this.defaultTextureColor = false;
     
-    this.inverseNormals = typeof input.inverseNormals == "undefined" ? false : input.inverseNormals;
     this.setPosition(input.position);
 
     this.preRenderScenes = [];
     this.frameBuffers = [];
     
     this.collisionGridCoords = [];
-    this.collision = input.collision;
+    this.collisionGrid = input.collisionGrid;
     this.init(input.gl);
 }
 
 WONSZ.Object3d.prototype.destructor = function() {
-    this.collision.deleteObject(this);
+    this.collisionGrid.deleteObject(this);
 }
 
 WONSZ.Object3d.prototype.draw = function(gl, shader) {
@@ -31,50 +31,10 @@ WONSZ.Object3d.prototype.draw = function(gl, shader) {
 };
 
 WONSZ.Object3d.prototype.update = function(gl, elapsed, scene) {
-    //gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexPositionBuffer);
-    //gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.model.vertices), gl.STATIC_DRAW);
+
 }
 
 WONSZ.Object3d.prototype.init = function(gl) {
-    if (this.inverseNormals) {
-        for (var i = 0; i < this.model.normals.length; i++) {
-            this.model.normals[i] *= -1;
-        }
-    }
-
-/**/
-    for (var i = 0; i < this.model.textures.length; i++) {
-        this.textures[i] = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, this.textures[i]);
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([this.color[0] * 255, this.color[1] * 255, this.color[2] * 255, this.color[3] * 255]));
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        gl.bindTexture(gl.TEXTURE_2D, null);
-
-        if (this.model.textures.length > 0) {
-            var wait = function(i) {
-                if (!this.model.texturesLoaded[i]) {
-                    console.log("loading");
-                    setTimeout(wait.bind(this, i), 100);
-                } else {
-                    this.handleLoadedTexture(gl, i);
-                }
-            }
-            wait.bind(this, i)();
-        }
-    }
-
-    if (this.model.textures.length == 0) {
-        this.defaultTextureColor = true;
-        this.textures[0] = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, this.textures[0]);
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([this.color[0] * 255, this.color[1] * 255, this.color[2] * 255, this.color[3] * 255]));
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        gl.bindTexture(gl.TEXTURE_2D, null);
-    }
 
 
     this.vertexPositionBuffer = gl.createBuffer();
@@ -102,22 +62,13 @@ WONSZ.Object3d.prototype.init = function(gl) {
     this.textureCoordBuffer.numItems = this.model.textureCoords.length / 2;
 };
 
-WONSZ.Object3d.prototype.handleLoadedTexture = function(gl, i) {
-    this.textures[i].image = this.model.textures[i];
-    this.textures[i].width = this.model.textures[i].width;
-    this.textures[i].height = this.model.textures[i].height;
-    
-    gl.bindTexture(gl.TEXTURE_2D, this.textures[i]);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.textures[i].image);
-}
 /**
  * 
  * @param {type} gl, depth (t/f), width, height, scene, textureUnit
  * @returns {undefined}
  */
-WONSZ.Object3d.prototype.addPreRenderScene = function(input){
-    var gl = input.gl;
-    
+WONSZ.Object3d.prototype.addPreRenderScene = function(input){//first add pre render scene, then add this object to its scene
+    var gl = input.gl;    
 
     this.frameBuffers.push(gl.createFramebuffer());
     var i = this.frameBuffers.length - 1;
@@ -156,7 +107,7 @@ WONSZ.Object3d.prototype.addTextureUnit = function(gl, texture, width, height, t
 }
 
 WONSZ.Object3d.prototype.addTexture = function(texture, textureUnit) {
-    if(textureUnit){
+    if(typeof textureUnit === 'number'){
         this.textures[textureUnit] = texture;
     }
     else{
@@ -214,12 +165,33 @@ WONSZ.Object3d.prototype.translate = function(arr) {
     //mat4.translate(this.positionMatrix, [arr[0] * (1/this.positionMatrix[0]), arr[1] * (1/this.positionMatrix[5]), arr[2] * (1/this.positionMatrix[10])]);
 };
 
-WONSZ.Object3d.prototype.computeBoundingVolume = function() {
-    this.model.boundingVolume.computeBoundingVolume(this.getPositionMatrix());
+WONSZ.Object3d.prototype.getShader = function(){
+    return this.shader;
 }
 
-WONSZ.Object3d.prototype.insertIntoCollision = function(collsion) {
-    this.computeBoundingVolume();
-    this.collisionGridCoords = collsion.insertObject(this);
+WONSZ.Object3d.prototype.setBoundingVolume = function(BV){
+    this._boundingVolume = BV;
+}
 
+WONSZ.Object3d.prototype.getBoundingVolume = function(){
+    return this._boundingVolume;
+}
+
+WONSZ.Object3d.prototype.setColisionGridCoords = function(arr){
+    this.colisionGridCoords = arr;
+}
+
+WONSZ.Object3d.prototype.computeBoundingVolume = function() {
+    this.getBoundingVolume().computeBoundingVolume(this.getPositionMatrix());
+}
+
+WONSZ.Object3d.prototype.insertIntoCollisionGrid = function() {
+    this.computeBoundingVolume();
+    this.collisionGridCoords = this.collisionGrid.insertObject(this);
+}
+
+WONSZ.Object3d.prototype.updatePositionInCollisionGrid = function(){
+    this.computeBoundingVolume();
+    this.collisionGrid.deleteObject(this);
+    this.collisionGridCoords = this.collisionGrid.insertObject(this);
 }

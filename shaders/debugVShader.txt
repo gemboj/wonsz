@@ -1,0 +1,8 @@
+attribute vec3 aVertexPosition;
+
+uniform mat4 uPMatrix;
+uniform mat4 uCameraMatrix;
+void main(void) {
+
+   gl_Position = uPMatrix * uCameraMatrix * vec4(aVertexPosition, 1.0);
+}

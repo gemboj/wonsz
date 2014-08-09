@@ -1,44 +1,53 @@
 //gl, src, float (t/f), width, height
-
-WONSZ.Texture = function(input){    
-    this.texture = input.gl.createTexture();
-    this.loaded = false;
-    this.gl = input.gl;
-    this.float = input.float;
+/**
+ * 
+ * @param {type} inputsdfsdf sd
+ * @returns {undefined} sdfsdfsdf
+ */
+WONSZ.Texture = function(input){  
+    this.gl = input.gl;    
+    this.type = input.type || "UNSIGNED_BYTE";
+    this.filter = input.texParam || "NEAREST";
     
-    if(input.src){
-        this.texture.image = new Image();
-        this.texture.image.src = input.src;
-        this.texture.image.onload = this.loadComplete.bind(this);   
+    this.init();    
+
+    
+    if(typeof input.src === "string"){
+        this.image = new Image();
+        this.width = 1;
+        this.height = 1;
+        this.fillTexture(input.color || new Uint8Array([255, 0, 0, 0]));        
+        
+        this.image.src = input.src;        
+        this.image.onload = this.loadComplete.bind(this); 
     }
     else{
-        this.texture.image = null;        
+        this.image = input.src;        
         this.width = input.width;
         this.height = input.height;
-        this.loadComplete();
+        this.fillTexture(this.image);
     }
 }
 
 WONSZ.Texture.prototype = {
-    loadComplete: function(){
+    init: function(){
         var gl = this.gl;
-        this.width = this.width || this.texture.image.width;
-        this.height = this.height || this.texture.image.height;
+        
+        this.texture = gl.createTexture();
         
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);            
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        
-        if(this.float){
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.width, this.height, 0, gl.RGBA, gl.FLOAT, this.texture.image);
-        }
-        else{
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.width, this.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.texture.image);
-        }
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl[this.filter]);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl[this.filter]);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.bindTexture(gl.TEXTURE_2D, null);
-        
-        this.loaded = true;
+    },
+    
+    loadComplete: function(){
+        this.width = this.image.width || this.width;
+        this.height = this.image.height || this.height;
+        this.fillTexture(this.image);        
     },
     
     getWidth: function(){
@@ -61,16 +70,17 @@ WONSZ.Texture.prototype = {
         return this.float;
     },
     
-    fillTexture: function(array){
+    fillTexture: function(filler){
         var gl = this.gl;
         
-        this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);        
-        if(this.float){
-            gl.texImage2D(gl.TEXTURE_2D, 0, this.gl.RGBA, this.width, this.height, 0, gl.RGBA, gl.FLOAT, array);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
+        if(filler instanceof Image){
+           gl.texImage2D(gl.TEXTURE_2D, 0, this.gl.RGBA, gl.RGBA, gl[this.type], filler); 
         }
         else{
-            gl.texImage2D(gl.TEXTURE_2D, 0, this.gl.RGBA, this.width, this.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, array);
-        }        
+            gl.texImage2D(gl.TEXTURE_2D, 0, this.gl.RGBA, this.width, this.height, 0, gl.RGBA, gl[this.type], filler);
+        }
+        
         gl.bindTexture(gl.TEXTURE_2D, null);
         
         return this;

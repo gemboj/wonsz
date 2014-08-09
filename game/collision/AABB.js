@@ -1,18 +1,18 @@
-function AABB(input) {
-    this.min = [0, 0, 0];
+function AABB(model) {
+    if(!model){
+        return;
+    }
+    
+    
+    
+    this.min = [0, 0, 0];//AABB after transformations
     this.max = [0, 0, 0];
     
-    this.minBase = [0, 0, 0];
+    this.minBase = [0, 0, 0];//Base AABB - not editable
     this.maxBase = [0, 0, 0];
     
-    if (input["vertices"]) {
-        this.init(input.vertices);
-    }
-    else {
-        //clone
-        this.minBase = input.AABB.minBase.slice();
-        this.maxBase = input.AABB.maxBase.slice();
-    }
+    this.init(model.getVertices());
+
 }
 
 AABB.prototype.init = function(vertices) {
@@ -46,10 +46,19 @@ AABB.prototype.translate = function(arr) {
 }
 
 AABB.prototype.clone = function() {
-    return new AABB({AABB: this});
+    var aabb = new AABB();
+    aabb.min = this.min.slice();
+    aabb.max = this.max.slice();
+    aabb.minBase = this.minBase.slice();
+    aabb.maxBase = this.maxBase.slice();
+    return aabb;
 }
 
 AABB.prototype.computeBoundingVolume = function(matrix) {
     this.scale([matrix[0], matrix[5], matrix[10]]);
     this.translate([matrix[12], matrix[13], matrix[14]]);
+}
+
+AABB.prototype.getName = function(){
+    return "AABB";
 }

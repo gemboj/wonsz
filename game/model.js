@@ -3,10 +3,9 @@ WONSZ.Model = function(input) {
     this.indices = [];
     this.normals = [];
     this.textureCoords = [];
-    this.textures = [];
-    this.texturesLoaded = [];
     
-    this.boundingVolume;
+    this.inverseNormals = input.inverseNormals || false;
+    //this.boundingVolume;
     
     this.boundingParticles = [];
     this.boundingParticlesVelocities = [];
@@ -14,7 +13,7 @@ WONSZ.Model = function(input) {
 
 
 
-    var model = typeof input.model == "undefined" ? input.geometry : input.model;
+    var model = input.model || input.geometry;
 
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.open('GET', "game/models/" + model + "/" + input.geometry + ".dae", false);
@@ -50,7 +49,7 @@ WONSZ.Model = function(input) {
     //if(input.smooth == true){
     //    this.smooth(xmlObject, rawTextureCoords, rawVertices, rawNormals, rawIndices, input, model);
     //}
-    this.boundingVolume = new AABB({vertices: this.vertices});
+    //this.boundingVolume = new AABB({vertices: this.vertices});
 }
 
 WONSZ.Model.prototype.flat = function(xmlObject, rawTextureCoords, rawVertices, rawNormals, rawIndices, input, model) {
@@ -77,20 +76,7 @@ WONSZ.Model.prototype.flat = function(xmlObject, rawTextureCoords, rawVertices, 
             this.textureCoords.push(rawTextureCoords[2 * rawIndices[i + 2] + 1]);
 
             this.indices.push(i / offset);
-        }
-
-        var loadComplete = function(i) {
-            this.texturesLoaded[i] = true;
-            console.log("loaded");
-        }
-        if(typeof input.textures != "undefined"){
-        for (var i = 0; i < input.textures.length; i++) {
-            this.textures[i] = new Image();
-            this.texturesLoaded[i] = false;
-            this.textures[i].src = "game/models/" + model + "/" + input.textures[i] + ".png";
-            this.textures[i].onload = loadComplete.bind(this, i);
-        }
-    }
+        }    
     }
     else {
         if (xmlObject.querySelector("[id='" + input.geometry + "-mesh-map-0-array']") == null) {
@@ -140,6 +126,16 @@ WONSZ.Model.prototype.flat = function(xmlObject, rawTextureCoords, rawVertices, 
             cT = [this.textureCoords[2*this.indices[i+2]], this.textureCoords[2*this.indices[i+2] +1]];
         this.getBoundingParticles(a, b, c, aT, bT, cT);
     }
+    
+    if (this.inverseNormals) {
+        for (var i = 0; i < this.normals.length; i++) {
+            this.normals[i] *= -1;
+        }
+    }
+}
+
+WONSZ.Model.prototype.getVertices = function(){
+    return this.vertices;
 }
 
 WONSZ.Model.prototype.getBoundingParticles = function(a, b, c, aT, bT, cT) {
@@ -187,17 +183,15 @@ WONSZ.Model.prototype.getBoundingParticles = function(a, b, c, aT, bT, cT) {
     }
 }
 
-WONSZ.Model.prototype.getModel = function() {
+/*WONSZ.Model.prototype.getModel = function() {
     var model = {};
     model.vertices = this.vertices.slice();
     model.indices = this.indices.slice();
     model.normals = this.normals.slice();
     model.textureCoords = this.textureCoords.slice();
-    model.textures = this.textures.slice();
-    model.texturesLoaded = this.texturesLoaded;
     model.boundingVolume = this.boundingVolume.clone();
     model.boundingParticles = this.boundingParticles.slice();
     model.boundingParticlesVelocities = this.boundingParticlesVelocities.slice();
     model.boundingParticlesColors = this.boundingParticlesColors;
     return model;
-}
+}*/

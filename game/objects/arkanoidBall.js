@@ -3,9 +3,9 @@ WONSZ.ArkanoidBall = function(input) {
 
 
     this.respawnTime = 2000;
-    this.speed = 0.3;
+    this.speed = 0.05;
     this.lives = input.lives;
-    var tempVec = [1, 1, 0];
+    var tempVec = [-1, -1, 0];
     vec3.normalize(tempVec);
     this.velY = tempVec[1] * this.speed;
     this.velX = tempVec[0] * this.speed;
@@ -16,17 +16,19 @@ WONSZ.ArkanoidBall.prototype = Object.create(WONSZ.Object3d.prototype);
 WONSZ.ArkanoidBall.prototype.constructor = WONSZ.ArkanoidBall;
 
 WONSZ.ArkanoidBall.prototype.update = function(gl, elapsed, scene) {
+    //this.rotate(0.05, 0.05, 0.05);
     if(this.respawnTime > 0){
         this.respawnTime -= elapsed;
         return;
     };
     
-    mat4.translate(this.positionMatrix, [this.velX, this.velY, 0]);
+    //mat4.translate(this.positionMatrix, [this.velX, this.velY, 0]);
+    this.translate([this.velX, this.velY, 0]);
     var posVec = this.getPositionVec();
 
 
     this.computeBoundingVolume();
-    var collisionObject = this.collision.checkBoundingVolumeCollision(this.model.boundingVolume);
+    var collisionObject = this.collisionGrid.checkBoundingVolumeCollision(this.getBoundingVolume());
     if (collisionObject) {
         if (collisionObject.special == "AAPlane") {
             if(collisionObject.side == 'bottom'){                
@@ -67,11 +69,13 @@ WONSZ.ArkanoidBall.prototype.update = function(gl, elapsed, scene) {
             vec3.normalize(tempVec);
             this.velY = tempVec[1] * this.speed;
             this.velX = tempVec[0] * this.speed;
-            scene.addObject(new WONSZ.ParticleEmitter({gl: gl, positionMatrix: collisionObject.getPositionMatrix(), 
+            var particle = new WONSZ.ParticleEmitter({gl: gl, positionMatrix: collisionObject.getPositionMatrix(), 
                                                  numParticles: 1000, radius: 0.1, texture: collisionObject.textures[0],
                                                  particles: collisionObject.model.boundingParticles, 
                                                  velocities: collisionObject.model.boundingParticlesVelocities, 
-                                                 colors: collisionObject.model.boundingParticlesColors}));
+                                                 colors: collisionObject.model.boundingParticlesColors});
+            //particle.addTexture(new WONSZ.Texture({gl: gl, src: new Uint8Array([155,155,155, 255]), width: 1, height: 1}), 0);
+            scene.addObject(particle);
         }
     }
 }

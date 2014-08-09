@@ -33,7 +33,7 @@ WONSZ.ParticleEmitter.prototype.draw = function(gl, shader) {
     gl.uniform1f(shader.uniform.uMaxRange, this.maxRange);
 
     gl.activeTexture(gl["TEXTURE0"]);
-    gl.bindTexture(gl.TEXTURE_2D, this.texture);
+    gl.bindTexture(gl.TEXTURE_2D, this.texture.getTexture());
     gl.uniform1i(shader.uniform.uTexture, 0);
 
     gl.drawArrays(gl.POINTS, 0, this.particles.length / 3);
@@ -88,3 +88,7 @@ WONSZ.ParticleEmitter.prototype.setPosition = function(position) {
 WONSZ.ParticleEmitter.prototype.shift = function(shift) {
     mat4.translate(this.positionMatrix, shift);
 };
+
+WONSZ.ParticleEmitter.prototype.getShader = function(){
+    return this.shader;
+}

@@ -18,24 +18,26 @@
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/game/camera.js</file>
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/shaders/interfaceFShader.txt</file>
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/game/collision/AABB.js</file>
+            <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/game/texture.js</file>
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/game/object3d.js</file>
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/shaders/basicFShader.txt</file>
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/shaders/particleTextureRFShader.txt</file>
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/game/scene.js</file>
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/game/objects/particleTexture.js</file>
-            <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/shaders/interfaceVShader.txt</file>
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/shaders/particleFShader.txt</file>
+            <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/shaders/debugVShader.txt</file>
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/shaders/particleTextureRVShader.txt</file>
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/shaders/basicFShaderT.txt</file>
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/game/inputHandler.js</file>
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/game/objects/cube.js</file>
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/shaders/snakeFShader.txt</file>
+            <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/shaders/debugFShader.txt</file>
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/game/objects/debug.js</file>
+            <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/game/collisionGrid.js</file>
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/wonsz.js</file>
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/shaders/basicVShader.txt</file>
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/shaders/testFShader.txt</file>
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/shaders/basicVShaderT.txt</file>
-            <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/game/collision.js</file>
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/game/objects/arkanoidBall.js</file>
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/utils/utils.js</file>
             <file>file:/D:/Tools/NetBeans%207.4/projects/wonsz/shaders/testVShader.txt</file>

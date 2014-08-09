@@ -30,18 +30,10 @@ WONSZ.Scene.prototype.addObject = function(object) {
 };
 
 WONSZ.Scene.prototype.removeObject = function(object) {
-    for (var i in this.objects) {
-        if (i == object.shader) {
-            var tab = this.objects[i];
-            for (var j = 0; j < tab.length; j++) {
-                if (tab[j] == object) {
-                    this.objects[i][j].destructor();
-                    this.objects[i].splice(j, 1);
-                    return;
-                }
-            }
-        }
-    }
+    var tab = this.objects[object.getShader()];
+    var i = tab.indexOf(object);
+    tab[i].destructor();
+    tab.splice(i, 1);
 };
 
 WONSZ.Scene.prototype.addCamera = function(cameraObj, viewportWidth, viewportHeight) {

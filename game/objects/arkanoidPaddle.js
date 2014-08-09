@@ -10,8 +10,7 @@ WONSZ.ArkanoidPaddle.prototype.constructor = WONSZ.ArkanoidPaddle;
 
 WONSZ.ArkanoidPaddle.prototype.update = function(gl, elapsed, scene) {
     this.handleKeys(elapsed);
-    this.computeBoundingVolume();
-    this.collision.updateObject(this);
+    this.updatePositionInCollisionGrid();
     if (this.positionMatrix[12] < -5) {
 
         this.positionMatrix[12] = -5
