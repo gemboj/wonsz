@@ -3,13 +3,14 @@ WONSZ.ArkanoidBall = function(input) {
 
 
     this.respawnTime = 2000;
-    this.speed = 0.05;
+    this.speed = 0.10;
     this.lives = input.lives;
     var tempVec = [-1, -1, 0];
     vec3.normalize(tempVec);
     this.velY = tempVec[1] * this.speed;
     this.velX = tempVec[0] * this.speed;
     this.keys = {left: 37, right: 39, up: 38, down: 40};
+	this.cubesTotal = input.cubesTotal;
 }
 
 WONSZ.ArkanoidBall.prototype = Object.create(WONSZ.Object3d.prototype);
@@ -28,6 +29,8 @@ WONSZ.ArkanoidBall.prototype.update = function(gl, elapsed, scene) {
 
 
     this.computeBoundingVolume();
+	this.updatePositionInCollisionGrid();
+	var ballAabb = this.getBoundingVolume();
     var collisionObject = this.collisionGrid.checkBoundingVolumeCollision(this.getBoundingVolume());
     if (collisionObject) {
         if (collisionObject.special == "AAPlane") {
@@ -47,10 +50,31 @@ WONSZ.ArkanoidBall.prototype.update = function(gl, elapsed, scene) {
                     this.velY = tempVec[1] * this.speed;
                     this.velX = tempVec[0] * this.speed;
                     this.respawnTime = 2000;
-                   return;
+					return;
                 }
                 
             }
+			
+			switch(collisionObject.side){
+				case "bottom":
+					var bvXDiff = collisionObject.point[1] - ballAabb.min[1];
+					var translateVec = [0, bvXDiff, 0];
+					break;
+				case "top":
+					var bvXDiff = collisionObject.point[1] - ballAabb.max[1];
+					var translateVec = [0, bvXDiff, 0];
+					break;
+				case "left":
+					var bvXDiff = collisionObject.point[0] - ballAabb.min[0];
+					var translateVec = [bvXDiff, 0, 0];
+					break;
+				case "right":
+					var bvXDiff = collisionObject.point[0] - ballAabb.max[0];
+					var translateVec = [bvXDiff, 0, 0];
+					break;
+			}
+			
+			this.translate(translateVec);
             
             this.velX *= collisionObject.vector[0] != 0 ? -1 : 1;
             this.velY *= collisionObject.vector[1] != 0 ? -1 : 1;
@@ -62,6 +86,10 @@ WONSZ.ArkanoidBall.prototype.update = function(gl, elapsed, scene) {
 
             if (!(collisionObject instanceof WONSZ.ArkanoidPaddle)) {
                 scene.removeObject(collisionObject);
+				this.cubesTotal--;
+				if(this.cubesTotal == 0){
+					scene.return = true;
+				}
             }
 
             var tempVec = [];

@@ -1,4 +1,12 @@
 var inputHandler;
+
+function start(){
+	var button = document.getElementById("startButton");
+	button.style.display = "none";
+	
+	webGLStart();
+}
+
 function webGLStart() {
     var canvas = WONSZ.utility.getCanvas();
     inputHandler = new InputHandler(canvas);
@@ -21,20 +29,6 @@ function webGLStart() {
     }
     wait();
 }
-
-/*function test(gl, testScene) {
-    var scene = new WONSZ.Scene();
-    var plane = new WONSZ.Model({geometry: "Plane", model: "plane"});
-
-    var plane = new Plane({position: [0, 0, 0], gl: gl, model: plane, color: [1, 0, 1, 1]})
-
-    var camera = scene.addCamera(new WONSZ.CameraBasic({gl: gl, position: [0.0, 0.0, 0.0], movement: true, viewAngle: 45, moveRate: 0.05}));
-    //var unit = plane.addTexture(gl, null, 512, 512);
-    plane.addPreRenderScene(testScene, unit);
-
-    scene.addObject(plane);
-    return scene;
-}*/
 
 function particleTest(gl, arkanoid) {
 
@@ -81,32 +75,12 @@ function particleTest(gl, arkanoid) {
     
     scene.addObject(cos);
     scene2.addObject(cos2);
-    var debug = scene2.addObject(new WONSZ.Object3d({gl: gl, model: plane, position: [0,0,1], shader: "interfaceShader"}));
-    debug.textures[0] = cos.textures[0];   
-    debug.scale([0.3, 0.5, 1.0]);
-    debug.translate([-1, -1, 0.0]);
+    //var debug = scene2.addObject(new WONSZ.Object3d({gl: gl, model: plane, position: [0,0,1], shader: "interfaceShader"}));
+    //debug.textures[0] = cos.textures[0];   
+    //debug.scale([0.3, 0.5, 1.0]);
+    //debug.translate([-1, -1, 0.0]);
     return scene2;
 }
-
-/*function cube(gl, testScene) {
-    var scene = new WONSZ.Scene();
-
-    var plane = new WONSZ.Model({geometry: "Plane", model: "plane"});
-
-    var paletka = scene.addObject(new Plane({position: [0, 0, 0], gl: gl, model: plane, color: [1, 0, 1, 1]}));
-
-    var cube = new WONSZ.Model({geometry: "Cube", model: "Cube"});
-    var cubeTemp = new Cube({animation: true, position: [2, 0, -10.0], gl: gl, model: cube, color: [Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.5, 1]});
-    var unit = cubeTemp.addTexture(gl, null, 512, 512);
-    cubeTemp.addPreRenderScene(testScene, unit);
-    scene.addAmbientLight([0.2, 0.2, 0.2]);
-
-    scene.addObject(cubeTemp);
-    scene.addPointLight(new WONSZ.PointLightStatic({location: [2.0, 2.0, -7.0], color: [0.7, 0.7, 0.7], minRange: 8.0, maxRange: 100.0}));
-    var camera = scene.addCamera(new WONSZ.CameraBasic({gl: gl, position: [0.0, 0.0, 0.0], movement: true, viewAngle: 45, moveRate: 0.05}));
-
-    return scene;
-}*/
 
 function arkanoid(gl) {
     var collisionGrid = new WONSZ.CollisionGrid({sceneSize: [16, 10, 2], gridSize: [5, 3, 1]});
@@ -140,24 +114,26 @@ function arkanoid(gl) {
     scene.addObject(cube1);
     
     
-    
-    for (var i = 0; i < 5; i++) {
-        for (var j = 0; j < 4; j++) {
+    var cubesWidth = 1;
+	var cubesHeight = 1;
+    for (var i = 0; i < cubesWidth; i++) {
+        for (var j = 0; j < cubesHeight; j++) {
             var cubeTemp = scene.addObject(new WONSZ.Cube({collisionGrid: collisionGrid, position: [i * 2 - 4, j * 0.4 + 2, -10.0], gl: gl, model: arkanoidBox, color: [Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.5, 1]}));
             cubeTemp.addTexture(new WONSZ.Texture({gl: gl, src: "game/models/arkanoid/box.png"}), 0);
             cubeTemp.scale([0.95, 0.15, 1]);
             cubeTemp.setBoundingVolume(arkanoidBoxAABB.clone());
-            //cubeTemp.translate([5, 0, 0]);
             cubeTemp.insertIntoCollisionGrid(collisionGrid);
             
         }
     }
+	/*
     var cos2 = scene.addObject(new WONSZ.Object3d({collisionGrid: collisionGrid, position: [-3, 0, -10], gl: gl, model: cos, color: [0.2, 0.2, 1, 1]}));
     cos2.addTexture(new WONSZ.Texture({gl: gl, src: "game/models/pojazd/pojazd.png"}), 0);
     cos2.scale([0.3, 0.3, 0.3]);
     cos2.setBoundingVolume(cosAABB.clone());
     cos2.insertIntoCollisionGrid(collisionGrid);   
-    
+    */
+	
     var lives = scene.addObject(new WONSZ.Object3d({position: [0, 0, 0], gl: gl, model: plane, shader: "interfaceShader"}));
     lives.translate([-1, 1, 0]);
     lives.addTexture(new WONSZ.Texture({gl: gl, src: "game/models/plane/lives.png"}), 0);
@@ -183,11 +159,12 @@ function arkanoid(gl) {
     
 
 
-    var kulka = scene.addObject(new WONSZ.ArkanoidBall({position: [0, 0.5, -10.0], gl: gl, model: kula, color: [1, 1, 1, 1], collisionGrid: collisionGrid, lives: livesNo}));
+    var kulka = scene.addObject(new WONSZ.ArkanoidBall({position: [0, 0, -10.0], gl: gl, model: kula, color: [1, 1, 1, 1], collisionGrid: collisionGrid, lives: livesNo, cubesTotal: cubesWidth * cubesHeight}));
     kulka.addTexture(new WONSZ.Texture({gl: gl, src: "game/models/arkanoid/ball.png"}), 0);
     //kulka.addTexture(whiteTex);
     kulka.scale([0.3, 0.3, 0.3]);
     kulka.setBoundingVolume(kulaAABB.clone());
+	kulka.insertIntoCollisionGrid();
 
     //scene.addObject(new WONSZ.DebugAABB({gl: gl, AABB: kulka.getBoundingVolume()}));
 

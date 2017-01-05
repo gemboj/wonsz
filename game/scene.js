@@ -11,6 +11,12 @@ WONSZ.Scene = function() {
     this.time = 0;
 
     this.preRenderScenes = [];
+	
+	this.gameover = null;
+}
+
+WONSZ.Scene.prototype.setGameover = function(gameover){
+	this.gameover = gameover;
 }
 
 WONSZ.Scene.prototype.addObject = function(object) {
