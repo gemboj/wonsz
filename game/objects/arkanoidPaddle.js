@@ -11,6 +11,25 @@ WONSZ.ArkanoidPaddle.prototype.constructor = WONSZ.ArkanoidPaddle;
 WONSZ.ArkanoidPaddle.prototype.update = function(gl, elapsed, scene) {
     this.handleKeys(elapsed);
     this.updatePositionInCollisionGrid();
+	
+	var collisionObject = this.collisionGrid.checkBoundingVolumeCollision(this.getBoundingVolume());
+	if(collisionObject){
+		if(collisionObject.special == "AAPlane"){
+			//var aabbCenter = this.getBoundingVolume().getCenter();
+			var pointX = collisionObject.point[0];
+			
+			if(collisionObject.side == "left"){
+				var bvXDiff = pointX - this.getBoundingVolume().min[0];
+			}
+			
+			if(collisionObject.side == "right"){
+				var bvXDiff = pointX - this.getBoundingVolume().max[0];
+			}
+			
+			this.translate([bvXDiff, 0, 0]);
+		}
+	}
+	/*
     if (this.positionMatrix[12] < -5) {
 
         this.positionMatrix[12] = -5
@@ -19,6 +38,7 @@ WONSZ.ArkanoidPaddle.prototype.update = function(gl, elapsed, scene) {
 
        this.positionMatrix[12] = 5
     }
+	*/
 }
 
 WONSZ.ArkanoidPaddle.prototype.handleKeys = function(elapsed) {

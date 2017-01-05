@@ -152,13 +152,13 @@ WONSZ.CollisionGrid.prototype.checkBoundingVolumeCollision = function(BV) {
                 var name = tempTab2[j].special;
             }
             
-            if (this["check" + inputBV + "against" + name](BV, objBV)) {
+            if (this["check" + inputBV + "against" + name](BV, objBV) && BV != objBV) {
                 return tempTab2[j];
             }
 
         }
     }
-    return 0;
+    return null;
 }
 
 WONSZ.CollisionGrid.prototype.checkTailCollision = function(location, radius, direction) {

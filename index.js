@@ -141,8 +141,8 @@ function arkanoid(gl) {
     
     
     
-    for (var i = 0; i < 1; i++) {
-        for (var j = 0; j < 1; j++) {
+    for (var i = 0; i < 5; i++) {
+        for (var j = 0; j < 4; j++) {
             var cubeTemp = scene.addObject(new WONSZ.Cube({collisionGrid: collisionGrid, position: [i * 2 - 4, j * 0.4 + 2, -10.0], gl: gl, model: arkanoidBox, color: [Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.5, 1]}));
             cubeTemp.addTexture(new WONSZ.Texture({gl: gl, src: "game/models/arkanoid/box.png"}), 0);
             cubeTemp.scale([0.95, 0.15, 1]);

@@ -29,6 +29,14 @@ AABB.prototype.init = function(vertices) {
     }
 }
 
+AABB.prototype.getCenter = function(){
+	return [
+		this.max[0] - (this.max[0] - this.min[0])/2,
+		this.max[1] - (this.max[1] - this.min[1])/2,
+		this.max[2] - (this.max[2] - this.min[2])/2,
+	];
+}
+
 AABB.prototype.scale = function(arr) {
     for (var i = 0; i < arr.length; i++) {
         this.min[i] = this.minBase[i] * arr[i];
