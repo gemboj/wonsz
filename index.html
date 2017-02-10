@@ -37,10 +37,16 @@
 </head>
 
 
-<body>
-
-    <canvas id="canvas" width="1024" height="512" style="border: none;"></canvas>
-	<input id="startButton" type="button" value="Start" onclick="start();"/>
+<body onload="webGLStart();">
+	<div style="position=: relative">
+		<div style="position: absolute ;top: 0;left: 0">
+			<canvas id="canvas" width="1024" height="512" style="border: none;"></canvas>
+		</div>
+		<div style="position: absolute;top: 170;left: 280">
+			<input id="startButtonEasy" type="button" value="Easy" onclick="startEasy();" style="font-size: 100"/>
+			<input id="startButtonHard" type="button" value="Hard" onclick="startHard();" style="font-size: 100"/>
+		</div>
+	</div>
 </body>
 
 </html>

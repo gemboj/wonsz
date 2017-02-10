@@ -35,6 +35,10 @@ WONSZ.Scene.prototype.addObject = function(object) {
     return object;
 };
 
+WONSZ.Scene.prototype.removePointLight = function(light){
+	this.pointLight.splice(this.pointLight.indexOf(light), 1);
+}
+
 WONSZ.Scene.prototype.removeObject = function(object) {
     var tab = this.objects[object.getShader()];
     var i = tab.indexOf(object);

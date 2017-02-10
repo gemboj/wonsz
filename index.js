@@ -1,10 +1,30 @@
 var inputHandler;
+var kulka;
 
-function start(){
-	var button = document.getElementById("startButton");
-	button.style.display = "none";
+function startEasy(){
+	var buttonEasy = document.getElementById("startButtonEasy");
+	buttonEasy.style.display = "none";
 	
-	webGLStart();
+	var buttonHard = document.getElementById("startButtonHard");
+	buttonHard.style.display = "none";
+	
+	if(kulka != null){
+		kulka.started = true;
+		kulka.speed = 0.08;
+	}
+}
+
+function startHard(){
+	var buttonEasy = document.getElementById("startButtonEasy");
+	buttonEasy.style.display = "none";
+	
+	var buttonHard = document.getElementById("startButtonHard");
+	buttonHard.style.display = "none";
+	
+	if(kulka != null){
+		kulka.started = true;
+		kulka.speed = 0.11;
+	}
 }
 
 function webGLStart() {
@@ -114,8 +134,8 @@ function arkanoid(gl) {
     scene.addObject(cube1);
     
     
-    var cubesWidth = 1;
-	var cubesHeight = 1;
+    var cubesWidth = 5;
+	var cubesHeight = 4;
     for (var i = 0; i < cubesWidth; i++) {
         for (var j = 0; j < cubesHeight; j++) {
             var cubeTemp = scene.addObject(new WONSZ.Cube({collisionGrid: collisionGrid, position: [i * 2 - 4, j * 0.4 + 2, -10.0], gl: gl, model: arkanoidBox, color: [Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.5, 1]}));
@@ -143,23 +163,26 @@ function arkanoid(gl) {
     livesNo.addTexture(new WONSZ.Texture({gl: gl, src: "game/models/plane/lives3.png"}), 0);
     livesNo.addTexture(new WONSZ.Texture({gl: gl, src: "game/models/plane/lives2.png"}), 1);
     livesNo.addTexture(new WONSZ.Texture({gl: gl, src: "game/models/plane/lives1.png"}), 2);
+	livesNo.addTexture(new WONSZ.Texture({gl: gl, src: "game/models/plane/lives0.png"}), 3);
     livesNo.translate([-1, 0.7, 0]);
     livesNo.scale([0.8, 0.8, 1.0]);
-    livesNo.left = 1;
+    livesNo.left = 3;
     
+	var gameover = new WONSZ.Object3d({position: [0, 0, 0], gl: gl, model: plane, shader: "interfaceShader"});
+    gameover.addTexture(new WONSZ.Texture({gl: gl, src: "game/models/plane/gameover.png"}), 0);
     
     
     
     var whiteTex = new WONSZ.Texture({gl: gl, src: new Uint8Array([255, 255, 255, 255]), width: 1, height: 1});
     var paletka = scene.addObject(new WONSZ.ArkanoidPaddle({collisionGrid: collisionGrid, position: [0, -2, -10.0], gl: gl, model: arkanoidPaddle, color: [1, 1, 1, 1]}));
     paletka.addTexture(whiteTex, 0);
-    paletka.scale([1.4, 0.05, 1]);
+    paletka.scale([1, 0.05, 1]);
     paletka.setBoundingVolume(arkanoidPaddleAABB.clone());
     paletka.insertIntoCollisionGrid();
     
 
 
-    var kulka = scene.addObject(new WONSZ.ArkanoidBall({position: [0, 0, -10.0], gl: gl, model: kula, color: [1, 1, 1, 1], collisionGrid: collisionGrid, lives: livesNo, cubesTotal: cubesWidth * cubesHeight}));
+    kulka = scene.addObject(new WONSZ.ArkanoidBall({position: [0, 0, -10.0], gl: gl, model: kula, color: [1, 1, 1, 1], collisionGrid: collisionGrid, lives: livesNo, cubesTotal: cubesWidth * cubesHeight, scene: scene, gameover: gameover}));
     kulka.addTexture(new WONSZ.Texture({gl: gl, src: "game/models/arkanoid/ball.png"}), 0);
     //kulka.addTexture(whiteTex);
     kulka.scale([0.3, 0.3, 0.3]);
@@ -168,9 +191,12 @@ function arkanoid(gl) {
 
     //scene.addObject(new WONSZ.DebugAABB({gl: gl, AABB: kulka.getBoundingVolume()}));
 
-    scene.addPointLight(new WONSZ.PointLightFollow({object: kulka, minRange: 0.5, maxRange: 1, color: [0, 1, 0]}));
+	var kulkaLight = new WONSZ.PointLightFollow({object: kulka, minRange: 0.5, maxRange: 1, color: [0, 1, 0]});
+    scene.addPointLight(kulkaLight);
     scene.addPointLight(new WONSZ.PointLightStatic({location: [2.0, 2.0, -7.0], color: [0.7, 0.7, 0.7], minRange: 8.0, maxRange: 100.0}));
     scene.addAmbientLight([0.2, 0.2, 0.2]);
+	
+	kulka.addFollowLight(kulkaLight);
 
     //var camera = scene.addCamera(new WONSZ.CameraBasic({gl: gl, position: [0.0, 0.0, 0.0], movement: true, viewAngle: 45, moveRate: 0.05}));
     var camera = scene.addCamera(new WONSZ.CameraBasic({gl: gl, position: [0.0, 0.0, 0.0], movement: true, viewAngle: 45, moveRate: 0.05}), 1024, 512);
